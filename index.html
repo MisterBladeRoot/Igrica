@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="hr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kaos Kompas</title>
+  <style>
+    :root {
+      --bg0: #090910;
+      --bg1: #141421;
+      --ink: #f8f2e8;
+      --muted: rgba(248, 242, 232, .72);
+      --soft: rgba(248, 242, 232, .10);
+      --line: rgba(248, 242, 232, .18);
+      --panel: rgba(19, 19, 31, .86);
+      --panel2: rgba(255, 255, 255, .065);
+      --active: #ffd166;
+      --active2: #ef476f;
+      --green: #06d6a0;
+      --purple: #b388ff;
+      --blue: #77d6ff;
+      --shadow: 0 28px 90px rgba(0,0,0,.48);
+      --radius: 28px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 14% 8%, rgba(239,71,111,.26), transparent 26%),
+        radial-gradient(circle at 86% 4%, rgba(255,209,102,.22), transparent 24%),
+        radial-gradient(circle at 72% 96%, rgba(6,214,160,.18), transparent 28%),
+        linear-gradient(135deg, var(--bg0), var(--bg1) 58%, #07070d);
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px);
+      background-size: 46px 46px;
+      mask-image: radial-gradient(circle at center, rgba(0,0,0,.8), transparent 76%);
+      opacity: .42;
+    }
+
+    .floaters {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .floater {
+      position: absolute;
+      width: 74px;
+      height: 74px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.04);
+      transform: rotate(12deg);
+      border-radius: 18px;
+      filter: blur(.1px);
+      opacity: .62;
+    }
+
+    .floater:nth-child(1) { left: 5%; top: 18%; transform: rotate(-15deg); }
+    .floater:nth-child(2) { right: 8%; top: 30%; width: 48px; height: 48px; border-radius: 50%; }
+    .floater:nth-child(3) { left: 12%; bottom: 12%; width: 54px; height: 54px; transform: rotate(35deg); }
+    .floater:nth-child(4) { right: 14%; bottom: 10%; width: 88px; height: 56px; transform: rotate(-26deg); }
+    .floater:nth-child(5) { left: 46%; top: 7%; width: 38px; height: 38px; border-radius: 12px; transform: rotate(45deg); }
+
+    .app {
+      max-width: 1180px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(280px, .88fr);
+      gap: 22px;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+
+    .hero-copy {
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(160deg, rgba(255,255,255,.095), rgba(255,255,255,.035)),
+        var(--panel);
+      border-radius: calc(var(--radius) + 8px);
+      box-shadow: var(--shadow);
+      padding: clamp(22px, 4vw, 38px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      right: -90px;
+      bottom: -100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,209,102,.25), transparent 62%);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--active);
+      border: 1px solid rgba(255,209,102,.34);
+      background: rgba(255,209,102,.09);
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(50px, 9vw, 106px);
+      line-height: .82;
+      letter-spacing: -0.085em;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      max-width: 740px;
+      font-size: 17px;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      border-radius: 18px;
+      padding: 12px 14px;
+      min-width: 120px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 22px;
+      letter-spacing: -.04em;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .hero-art {
+      min-height: 330px;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at 40% 16%, rgba(255,255,255,.10), transparent 30%),
+        linear-gradient(160deg, rgba(255,209,102,.14), rgba(239,71,111,.10) 45%, rgba(6,214,160,.09)),
+        rgba(19,19,31,.72);
+      border-radius: calc(var(--radius) + 8px);
+      box-shadow: var(--shadow);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-art svg {
+      width: min(100%, 520px);
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 20px 32px rgba(0,0,0,.38));
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.035)),
+        var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      padding: 22px;
+    }
+
+    .setup {
+      display: grid;
+      gap: 22px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-weight: 950;
+      margin: 0;
+    }
+
+    .section-note {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .game-btn {
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.11), transparent 42%),
+        rgba(255,255,255,.055);
+      color: var(--ink);
+      border-radius: 24px;
+      padding: 16px;
+      min-height: 190px;
+      cursor: pointer;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      transition: transform .16s ease, border .16s ease, background .16s ease;
+    }
+
+    .game-btn:hover {
+      transform: translateY(-3px) rotate(-.4deg);
+      border-color: color-mix(in srgb, var(--active) 70%, white 10%);
+    }
+
+    .game-btn.active {
+      border-color: var(--active);
+      background:
+        radial-gradient(circle at top left, color-mix(in srgb, var(--active) 34%, transparent), transparent 48%),
+        radial-gradient(circle at bottom right, color-mix(in srgb, var(--active2) 22%, transparent), transparent 42%),
+        rgba(255,255,255,.065);
+    }
+
+    .game-graphic {
+      width: 62px;
+      height: 62px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 14px;
+    }
+
+    .game-graphic svg { width: 62px; height: 62px; display: block; }
+
+    .game-title {
+      font-size: 20px;
+      font-weight: 1000;
+      letter-spacing: -.045em;
+      margin-bottom: 8px;
+    }
+
+    .game-desc {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.36;
+      margin: 0;
+    }
+
+    .game-count {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.22);
+      color: var(--active);
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .category-btn {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.055);
+      color: var(--ink);
+      border-radius: 19px;
+      padding: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: transform .14s ease, border .14s ease, background .14s ease;
+      min-height: 78px;
+    }
+
+    .category-btn:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,.34);
+    }
+
+    .category-btn.active {
+      border-color: var(--green);
+      background:
+        radial-gradient(circle at top left, rgba(6,214,160,.20), transparent 56%),
+        rgba(6,214,160,.075);
+    }
+
+    .category-name {
+      font-weight: 950;
+      letter-spacing: -.025em;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .category-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 20px rgba(6,214,160,.45);
+      flex: 0 0 auto;
+    }
+
+    .category-count {
+      color: var(--muted);
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      margin-top: 6px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .primary, .secondary {
+      border-radius: 17px;
+      padding: 14px 18px;
+      font-weight: 1000;
+      cursor: pointer;
+      font-size: 15px;
+      transition: transform .14s ease, filter .14s ease, background .14s ease;
+    }
+
+    .primary {
+      color: #15100a;
+      background: linear-gradient(135deg, var(--active), #ff9f1c);
+      border: 1px solid rgba(255,255,255,.22);
+      box-shadow: 0 12px 28px color-mix(in srgb, var(--active) 24%, transparent);
+    }
+
+    .secondary {
+      color: var(--ink);
+      background: rgba(255,255,255,.075);
+      border: 1px solid var(--line);
+    }
+
+    .primary:hover, .secondary:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin: 0;
+      max-width: 780px;
+    }
+
+    .play {
+      display: none;
+    }
+
+    .play.active {
+      display: block;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+
+    .mode {
+      color: var(--active);
+      font-weight: 1000;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    .mini-select {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mini-chip {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.065);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .mini-chip.active {
+      color: #071511;
+      background: var(--green);
+      border-color: var(--green);
+      box-shadow: 0 0 0 4px rgba(6,214,160,.10);
+    }
+
+    .table-card {
+      position: relative;
+      min-height: 390px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background:
+        radial-gradient(circle at 18% 8%, color-mix(in srgb, var(--active) 24%, transparent), transparent 34%),
+        radial-gradient(circle at 84% 98%, color-mix(in srgb, var(--active2) 22%, transparent), transparent 38%),
+        linear-gradient(160deg, rgba(255,255,255,.095), rgba(255,255,255,.035)),
+        #12121e;
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      padding: 40px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.035), 0 20px 60px rgba(0,0,0,.35);
+    }
+
+    .table-card::before {
+      content: "";
+      position: absolute;
+      inset: 15px;
+      border: 1px dashed rgba(255,255,255,.18);
+      border-radius: 24px;
+      pointer-events: none;
+    }
+
+    .table-card::after {
+      content: "";
+      position: absolute;
+      width: 210px;
+      height: 210px;
+      right: -68px;
+      top: -78px;
+      background:
+        conic-gradient(from 20deg, rgba(255,255,255,.08), transparent 22%, rgba(255,255,255,.10) 35%, transparent 60%, rgba(255,255,255,.08));
+      border-radius: 50%;
+      opacity: .65;
+    }
+
+    .corner-mark {
+      position: absolute;
+      width: 74px;
+      height: 74px;
+      left: 22px;
+      top: 22px;
+      color: var(--active);
+      opacity: .82;
+    }
+
+    .corner-mark.bottom {
+      left: auto;
+      top: auto;
+      right: 22px;
+      bottom: 22px;
+      transform: rotate(180deg);
+      color: var(--active2);
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 920px;
+    }
+
+    .category-label {
+      color: var(--green);
+      font-weight: 1000;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: 12px;
+    }
+
+    .question {
+      font-size: clamp(28px, 4.2vw, 56px);
+      line-height: 1.04;
+      font-weight: 1000;
+      letter-spacing: -0.06em;
+      text-wrap: balance;
+    }
+
+    .table-card.pop .question {
+      animation: pop .18s ease;
+    }
+
+    @keyframes pop {
+      0% { transform: translateY(8px) scale(.985); opacity: .35; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .progress-wrap {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .progress {
+      height: 10px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--green), var(--active), var(--active2));
+      transition: width .2s ease;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .deck-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 12px;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 18px;
+    }
+
+    @media (max-width: 980px) {
+      body { padding: 14px; }
+      .hero { grid-template-columns: 1fr; }
+      .hero-art { min-height: 260px; }
+      .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .controls { grid-template-columns: repeat(2, 1fr); }
+      .topbar { grid-template-columns: 1fr; }
+      .table-card { min-height: 390px; padding: 30px; }
+    }
+
+    @media (max-width: 560px) {
+      .game-grid, .category-grid, .controls { grid-template-columns: 1fr; }
+      .hero-copy, .hero-art, .panel, .table-card { border-radius: 22px; }
+      .stats { display: grid; grid-template-columns: repeat(2, 1fr); }
+      .stat { min-width: 0; }
+      .corner-mark { width: 52px; height: 52px; }
+      .question { font-size: clamp(26px, 9vw, 40px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="floaters" aria-hidden="true">
+    <div class="floater"></div>
+    <div class="floater"></div>
+    <div class="floater"></div>
+    <div class="floater"></div>
+    <div class="floater"></div>
+  </div>
+
+  <main class="app">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">igra na kartice · kaos mod</div>
+        <h1>Kaos Kompas</h1>
+        <p class="subtitle">Društvena igra s karticama za ekipu koja voli neugodne izbore, brza priznanja i rasprave koje počnu kao šala, a završe obranom karaktera.</p>
+        <div class="stats">
+          <div class="stat"><strong>4</strong><span>igre</span></div>
+          <div class="stat"><strong>22</strong><span>kategorije</span></div>
+          <div class="stat"><strong>825</strong><span>kartica</span></div>
+          <div class="stat"><strong>0</strong><span>dosadnih isprika</span></div>
+        </div>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 560 380" role="img">
+          <defs>
+            <linearGradient id="cardGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop stop-color="#fff1b8" offset="0"/>
+              <stop stop-color="#ff6f91" offset=".55"/>
+              <stop stop-color="#06d6a0" offset="1"/>
+            </linearGradient>
+            <linearGradient id="darkGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop stop-color="#25253b" offset="0"/>
+              <stop stop-color="#11111d" offset="1"/>
+            </linearGradient>
+            <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#000000" flood-opacity=".35"/>
+            </filter>
+          </defs>
+
+          <rect x="55" y="62" width="190" height="255" rx="28" transform="rotate(-12 150 190)" fill="url(#darkGrad)" stroke="rgba(255,255,255,.24)" stroke-width="2" filter="url(#softShadow)"/>
+          <rect x="305" y="58" width="185" height="250" rx="28" transform="rotate(11 397 183)" fill="url(#darkGrad)" stroke="rgba(255,255,255,.22)" stroke-width="2" filter="url(#softShadow)"/>
+          <rect x="185" y="44" width="198" height="285" rx="31" fill="#f7f0df" stroke="#fff8e8" stroke-width="4" filter="url(#softShadow)"/>
+
+          <circle cx="284" cy="184" r="89" fill="#141421" stroke="#2a2a42" stroke-width="12"/>
+          <circle cx="284" cy="184" r="63" fill="none" stroke="url(#cardGrad)" stroke-width="8" stroke-dasharray="18 12"/>
+          <path d="M284 94 L306 184 L284 274 L262 184 Z" fill="#ef476f"/>
+          <path d="M284 94 L306 184 L284 178 Z" fill="#ffd166"/>
+          <circle cx="284" cy="184" r="13" fill="#f8f2e8"/>
+
+          <g transform="translate(92 245) rotate(-10)">
+            <rect x="0" y="0" width="82" height="82" rx="18" fill="#ffd166"/>
+            <circle cx="24" cy="24" r="6" fill="#141421"/>
+            <circle cx="58" cy="24" r="6" fill="#141421"/>
+            <circle cx="41" cy="41" r="6" fill="#141421"/>
+            <circle cx="24" cy="58" r="6" fill="#141421"/>
+            <circle cx="58" cy="58" r="6" fill="#141421"/>
+          </g>
+
+          <g transform="translate(403 242) rotate(13)">
+            <path d="M42 0 L53 31 L86 31 L59 50 L70 82 L42 62 L15 82 L26 50 L0 31 L32 31 Z" fill="#06d6a0"/>
+          </g>
+
+          <g transform="translate(91 80)">
+            <path d="M0 28 C0 12 15 0 36 0 H92 C113 0 128 12 128 28 C128 44 113 56 92 56 H51 L29 78 L31 56 C12 54 0 43 0 28Z" fill="#ef476f"/>
+            <text x="64" y="37" text-anchor="middle" font-size="28" font-weight="900" fill="#fff">?</text>
+          </g>
+
+          <g transform="translate(407 84)">
+            <path d="M0 26 C0 10 14 0 32 0 H74 C93 0 106 10 106 26 C106 42 93 52 74 52 H43 L23 71 L25 52 C9 50 0 40 0 26Z" fill="#ffd166"/>
+            <text x="53" y="35" text-anchor="middle" font-size="24" font-weight="900" fill="#141421">!</text>
+          </g>
+
+          <text x="284" y="356" text-anchor="middle" font-size="19" font-weight="900" letter-spacing="4" fill="rgba(248,242,232,.72)">IZVUCI · ODLUČI · OBJASNI</text>
+        </svg>
+      </div>
+    </section>
+
+    <section class="panel setup" id="setup">
+      <div>
+        <div class="section-head">
+          <p class="section-title">1. Odaberi igru</p>
+          <p class="section-note">Svaka igra ima vlastiti špil i ton.</p>
+        </div>
+        <div class="game-grid" id="gameGrid"></div>
+      </div>
+
+      <div>
+        <div class="section-head">
+          <p class="section-title">2. Odaberi kategoriju</p>
+          <p class="section-note">“Sve” miješa cijeli špil odabrane igre.</p>
+        </div>
+        <div class="category-grid" id="categoryGrid"></div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="startBtn">Izvuci prvu karticu</button>
+        <button class="secondary" id="randomSetupBtn">Iznenadi me</button>
+        <p class="hint">Dizajn je složen kao špil kartica: odaberi mod, izvuci pitanje i natjeraj optužene da se brane. Nema kopiranja pitanja; igra je napravljena za igranje direktno s ekrana.</p>
+      </div>
+    </section>
+
+    <section class="panel play" id="play">
+      <div class="topbar">
+        <div>
+          <div class="mode" id="modeLabel"></div>
+          <div class="meta" id="metaLabel"></div>
+          <div class="mini-select" id="miniCategoryBar"></div>
+        </div>
+        <button class="secondary" id="backBtn">Promijeni igru</button>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span id="deckLabel"></span>
+          <span id="counter"></span>
+        </div>
+        <div class="progress" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+      </div>
+
+      <div class="table-card" id="tableCard">
+        <svg class="corner-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M32 4 L39 24 L60 24 L43 37 L50 58 L32 45 L14 58 L21 37 L4 24 L25 24 Z" fill="currentColor"/>
+        </svg>
+        <svg class="corner-mark bottom" viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M32 4 L39 24 L60 24 L43 37 L50 58 L32 45 L14 58 L21 37 L4 24 L25 24 Z" fill="currentColor"/>
+        </svg>
+        <div class="card-inner">
+          <div class="category-label" id="categoryLabel"></div>
+          <div class="question" id="questionText"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="secondary" id="prevBtn">Prethodno</button>
+        <button class="primary" id="nextBtn">Sljedeće</button>
+        <button class="secondary" id="randomBtn">Nasumično</button>
+        <button class="secondary" id="reshuffleBtn">Promiješaj</button>
+      </div>
+      <div class="deck-note" id="deckNote"></div>
+    </section>
+
+    <footer>Kaos Kompas radi offline u pregledniku. Najbolje radi kad netko mora objasniti svoj izbor.</footer>
+  </main>
+
+  <script>
+    const games = {"10 je, ali...":{"icon":"spark","description":"Ocijeni osobu nakon savršenog minusa. Poanta nije matematika, nego rasprava koja se otme kontroli.","categories":{"Kućni kaos":["10 je, ali ne vjeruje perilici suđa i sve pere ručno nakon što je perilica završila.","10 je, ali ima stolicu za odjeću koja je evoluirala u zaseban komad namještaja.","10 je, ali daljinski upravljač drži u ladici 'da se ne izgubi'.","10 je, ali ima ukrasne jastuke koje nitko ne smije koristiti.","10 je, ali u frižideru ima tri prazne boce jer ih 'netko možda napuni'.","10 je, ali wc papir stavlja na krivu stranu i brani to kao životni stav.","10 je, ali svaka polica ima svoju mikro-politiku rasporeda.","10 je, ali jede nad sudoperom jer 'tako nema tanjura'.","10 je, ali ima posebnu šalicu koju nitko ne smije ni pogledati.","10 je, ali nikad ne baca kutije od tehnologije jer 'možda zatreba'.","10 je, ali usisava samo vidljive dijelove stana.","10 je, ali ima ladicu s kablovima iz 2009. i emocionalno je vezan/a za svaki.","10 je, ali čuva vrećice u vrećici u još jednoj vrećici.","10 je, ali koristi pećnicu kao dodatni ormar.","10 je, ali svaku posudu poklopi krivim poklopcem i kaže da 'paše dovoljno'.","10 je, ali ima dekorativnu svijeću koju pali samo kad je već kasno za atmosferu.","10 je, ali u hodniku ima jednu stvar koju svi zaobilaze već šest mjeseci.","10 je, ali kupuje nove spužvice, ali uvijek koristi onu najstariju jer 'još može'.","10 je, ali ima sistem za začine koji razumije samo on/ona i možda tajna služba.","10 je, ali perilicu rublja puni kao da testira granice fizike.","10 je, ali ima ladicu 'sve i svašta' koja bi mogla financirati mali muzej.","10 je, ali svaki tanjur vraća na drugo mjesto pa kaže da je kuhinja intuitivna.","10 je, ali čuva pokvareni aparat jer 'samo mu treba jedan dio'.","10 je, ali mjeri čistoću stana prema tome vidi li se pod na fotografiji.","10 je, ali ima posteljinu za goste koju nitko nikad nije smio koristiti.","10 je, ali pali napu tek kad je dim već donio odluku.","10 je, ali svaku sitnicu stavlja u kutije s etiketama, osim etiketa.","10 je, ali ne dopušta otvaranje prozora jer je 'temperatura taman uhvaćena'.","10 je, ali ima kućne papuče za kuhinju, balkon i krizne odlaske do smeća.","10 je, ali gleda rok trajanja mlijeka kao horoskop.","10 je, ali ima jednu žlicu koju mrzi, ali je nikad ne baci.","10 je, ali svaki kvar u stanu rješava tako da ga ne gleda.","10 je, ali ima pravilo da se kauč ne smije sjediti na 'onom dijelu'.","10 je, ali čuva staklenke jer će jednog dana sigurno raditi zimnicu, možda.","10 je, ali ostavlja mokar ručnik na najlogičnijem, ali najgorem mjestu.","10 je, ali ima koš za rublje, ali prljava roba živi pored njega.","10 je, ali vjeruje da se stol čisti tako da se stvari premjeste na drugi stol.","10 je, ali ima balkon koji je službeno spremište za stvari bez državljanstva.","10 je, ali drži baterije u kutiji, ali nitko ne zna koje rade.","10 je, ali ima sobnu biljku koja je više projekt krivnje nego ukras.","10 je, ali ne pere šalicu od kave jer 'patina daje karakter'.","10 je, ali sklapa deku na kauču s vojnom preciznošću i emocionalnim pritiskom.","10 je, ali ima tri usisavača i nijedan nije dostupan kad treba.","10 je, ali ostavlja posuđe da se 'namoči' do nove geološke ere.","10 je, ali ima pravilo da se cipele skidaju, ali čarape moraju biti društveno prihvatljive."],"Modni zločini":["10 je, ali nosi sunčane naočale u klubu jer 'ima auru'.","10 je, ali kombinira trenirku i sako i naziva to business casual.","10 je, ali ima svečane Crocsice za posebne prigode.","10 je, ali nosi kapu u zatvorenom i ne zna gdje završava stil, a počinje obrana.","10 je, ali svaka odjevna kombinacija ima barem jedan nepotrebni lanac.","10 je, ali nosi bijele hlače kad god postoji realna šansa za umak.","10 je, ali misli da je 'crna majica' kompletan styling za svaku situaciju.","10 je, ali nosi parfem kao da pokušava osvojiti cijeli kvart.","10 je, ali ima jaknu koju zove 'statement piece', a svi ostali je zovu problem.","10 je, ali čarape i sandale nosi s tolikim samopouzdanjem da postaje zbunjujuće.","10 je, ali kupuje odjeću samo ako ima barem jedan džep koji ničemu ne služi.","10 je, ali na svako slavlje dođe obučen/a kao da ide na saslušanje.","10 je, ali svake godine ima novu 'ovo je moj stil' fazu.","10 je, ali misli da je leopard uzorak neutralna boja.","10 je, ali nosi torbu toliko malu da u nju stane samo jedna loša odluka.","10 je, ali ima traperice s rupama koje izgledaju kao da su izgubile raspravu.","10 je, ali nosi košulju otkopčanu točno jedan gumb previše.","10 je, ali kombinira tri različite crne boje i sve ih zove istom.","10 je, ali ima tenisice koje ne smiju vidjeti kišu, prašinu ni stvarni život.","10 je, ali na svaku odjeću doda prsluk jer 'slojevitost'.","10 je, ali nosi sat koji ne radi jer je 'vintage'.","10 je, ali kupuje odjeću u veličini budućeg optimizma.","10 je, ali ima kaput koji izgleda skupo, ali šuška kao vrećica.","10 je, ali u ljetnim mjesecima nosi kožu jer 'patnja je estetika'.","10 je, ali nosi trenirku s natpisom koji je previše samouvjeren za trgovinu.","10 je, ali ima svečanu kombinaciju koja ovisi o tome jesu li tenisice čiste.","10 je, ali nosi šešir i očekuje da svi prihvate novu osobnost.","10 je, ali na svako putovanje nosi odjeću za život koji ne vodi.","10 je, ali kombinira sportske čarape s outfitom koji traži odvjetnika.","10 je, ali ima remen koji služi samo da bude tema razgovora.","10 je, ali nosi majicu benda čije tri pjesme ne zna nabrojati.","10 je, ali ima naočale bez dioptrije i stav s dioptrijom.","10 je, ali nosi odjeću s toliko logotipa da izgleda sponzorirano bez ugovora.","10 je, ali ima 'casual' outfit koji zahtijeva 40 minuta pripreme.","10 je, ali uvijek je malo previše sređen/a za običan utorak.","10 je, ali uvijek je malo premalo sređen/a za događaj s pozivnicom.","10 je, ali nosi šal kao da je europski redatelj u krizi.","10 je, ali ima boju cipela koju nitko ne zna opisati bez rasprave.","10 je, ali kombinira elegantno i planinarsko kao da ide na gala uspon.","10 je, ali ima modni komad koji svi mrze, a on/ona ga zove potpisom.","10 je, ali kupuje jakne kao da živi u četiri klime istovremeno.","10 je, ali nosi nakit koji zvoni prije nego uđe u prostoriju.","10 je, ali misli da je 'oversized' rješenje za svaki problem, uključujući emocije.","10 je, ali ima odjevnu kombinaciju za kavu koja izgleda kao audicija za spot.","10 je, ali nosi bijele tenisice na mjesto gdje bijele tenisice idu umrijeti."],"Digitalni red flagovi":["10 je, ali lajka vlastite objave s drugog profila.","10 je, ali ima 4.000 pratitelja, a prati 11 ljudi.","10 je, ali svaku objavu završava s 'tko zna, zna'.","10 je, ali briše komentare koji nisu dovoljno oduševljeni.","10 je, ali objavljuje citate o miru nakon svake svađe.","10 je, ali nikad ne odgovara na poruke, a stalno dijeli objave o komunikaciji.","10 je, ali ima highlight 'healing era' koji traje već četiri godine.","10 je, ali objavi story iz teretane prije nego stvarno počne trenirati.","10 je, ali svaku osobu koju upozna odmah doda na sve mreže.","10 je, ali ima profilnu sliku iz razdoblja kad je imao/la potpuno drugu osobnost.","10 je, ali koristi LinkedIn kao da je Instagram s kravatama.","10 je, ali ima privatni profil i opis 'not your business'.","10 je, ali svaki story ima anketu koja zapravo traži validaciju.","10 je, ali koristi 'seen' kao oblik komunikacije.","10 je, ali šalje memeove umjesto isprika.","10 je, ali ima close friends listu koja je zapravo sudnica.","10 je, ali objavljuje 'offline sam' s 12 storyja u istom danu.","10 je, ali ne čestita rođendan privatno nego samo kroz javni story s lošom slikom.","10 je, ali ima tri profila: službeni, privatni i onaj za odluke bez posljedica.","10 je, ali svaku pjesmu u storyju bira kao da šalje šifriranu poruku.","10 je, ali piše 'ne pratim dramu', ali prvi/a zna svaki detalj.","10 je, ali snima koncert kroz mobitel i nikad više ne pogleda snimku.","10 je, ali ima status 'low profile' i objavljuje svaki obrok.","10 je, ali koristi filter koji više liči na svjedoka nego na lice.","10 je, ali u svakoj biografiji ima emoji koji nitko ne zna protumačiti.","10 je, ali u grupnom chatu šalje glasovne od sedam minuta bez uvoda.","10 je, ali reagira samo vatrom, čak i na loše vijesti.","10 je, ali ima profil koji izgleda kao motivacijski poster iz hotela.","10 je, ali tagira lokaciju tek kad ode, jer je misteriozan/misteriozna.","10 je, ali svaku promjenu raspoloženja najavi kroz citat na crnoj pozadini.","10 je, ali koristi 'haha' kad je ljut/a, a 'ok' kad je rat počeo.","10 je, ali ima folder screenshotova koji bi mogao završiti na sudu.","10 je, ali uzima pauzu od društvenih mreža i najavljuje je u pet objava.","10 je, ali svaki komentar pretvara u internu šalu koju nitko ne razumije.","10 je, ali objavljuje samo kad želi da jedna konkretna osoba vidi.","10 je, ali stavlja 'no drama' u opis, što je statistički sumnjivo.","10 je, ali ima toliko highlighta da profil izgleda kao streaming platforma.","10 je, ali koristi ankete da provjeri je li pogriješio/la, ali ne prihvaća rezultate.","10 je, ali prati bivše, bivše od bivših i jednu osobu koja je samo teorija.","10 je, ali odgovara na poruku nakon tri dana s 'tek sad vidim'.","10 je, ali ima status aktivnosti uključen samo kad želi psihološki rat.","10 je, ali piše komentare kao da potpisuje diplomatski sporazum.","10 je, ali u svakoj raspravi šalje screenshot umjesto rečenice.","10 je, ali mijenja profilnu sliku kad god promijeni životni narativ.","10 je, ali svaku objavu započinje s 'nije za svakoga'."],"Ljubavni alarmi":["10 je, ali kaže da su svi bivši/bivše bili 'ludi'.","10 je, ali nakon trećeg dopisivanja već planira zajednički stan.","10 je, ali traži lozinku za mobitel 'iz principa'.","10 je, ali kaže da ne voli dramu, a ima folder 'dokazi'.","10 je, ali ima zajednički profil s partnerom nakon dva tjedna.","10 je, ali svaku raspravu završava s 'samo kažem'.","10 je, ali testira ljubomoru kao da provodi znanstveni eksperiment.","10 je, ali zna rođendan bivše simpatije napamet i tvrdi da je slučajno.","10 je, ali kaže 'nisam tip za veze' dok očekuje punu vezu.","10 je, ali nestane na tri dana pa se vrati s 'hej'.","10 je, ali svaki kompliment zvuči kao pasivna agresija.","10 je, ali vodi ljubavni život kroz kriptične storyje.","10 je, ali misli da je 'ja sam takav/takva' argument.","10 je, ali u svađi koristi screenshotove iz 2021.","10 je, ali flerta s konobarom/konobaricom i kaže da je to 'samo energija'.","10 je, ali kaže da želi mir, ali bira ljude s više zapleta nego serija.","10 je, ali svaki dogovor zove 'spontanim', čak i kad je emocionalno opasan.","10 je, ali ima pravilo da se ne javlja prvi/prva, ali broji minute.","10 je, ali zna tko je kome lajkao sliku prije tri godine.","10 je, ali kaže da ne traži ništa ozbiljno, ali se uvrijedi ako se ponašaš tako.","10 je, ali u vezi se ponaša kao detektiv bez radnog vremena.","10 je, ali svaki problem rješava rečenicom 'ako znaš, znaš'.","10 je, ali ne zna reći što želi, ali zna točno što ne želi nakon što se dogodi.","10 je, ali izbjegava razgovor uživo, ali šalje eseje u 02:17.","10 je, ali ima 'tip osobe' koji je zapravo popis prošlih trauma.","10 je, ali svaki prekid zove lekcijom i nikad ne preda ispit.","10 je, ali voli 'iskrenost', ali samo kad je ugodna.","10 je, ali tvrdi da nije ljubomoran/ljubomorna, samo 'primjećuje obrasce'.","10 je, ali misli da je ghostanje oblik samopomoći.","10 je, ali u svakom odnosu prvo testira granice, a onda se čudi zidovima.","10 je, ali kaže da voli neovisnost, ali pita gdje si čim si miran/mirna.","10 je, ali svaku novu simpatiju predstavi kao 'nije moj tip', što znači da je gotovo.","10 je, ali ima backup plan za prekid prije nego što veza počne.","10 je, ali u svađi se sjeća točnih datuma, vremena i boje tvoje majice.","10 je, ali miješa misterioznost s nedostatkom komunikacije.","10 je, ali kaže da ne želi etikete, ali želi privilegije svih etiketa.","10 je, ali prebrzo koristi 'mi' i presporo koristi 'oprosti'.","10 je, ali ima ideal veze u kojem druga osoba čita misli i plaća parking.","10 je, ali svaki problem pretvara u test ljubavi.","10 je, ali kaže da ne voli igrice, ali igra na najtežoj razini.","10 je, ali pamti svaku tvoju riječ, osim one gdje si postavio/la granicu.","10 je, ali u dopisivanju je pjesnik, uživo je korisnička podrška.","10 je, ali sve bivše naziva 'lekcijama', a sadašnju osobu ispitom.","10 je, ali zaljubi se u potencijal i onda se svađa s realnošću.","10 je, ali misli da je ljubomora dokaz strasti, a ne alarm."],"Stvar za raspravu":["10 je, ali nikad ne kaže 'oprosti' prvi/prva, čak ni kad zna da je kriv/a.","10 je, ali ne želi objaviti vezu na društvenim mrežama jer 'ne treba svatko sve znati'.","10 je, ali očekuje da partner/partnerica uvijek plati više jer zarađuje više.","10 je, ali ne želi upoznati tvoje prijatelje jer 'veze su privatne'.","10 je, ali smatra da je dopisivanje s bivšima potpuno normalno.","10 je, ali želi znati tvoju lokaciju cijelo vrijeme 'radi sigurnosti'.","10 je, ali nikad ne priznaje da je ljubomoran/ljubomorna, samo postaje hladan/hladna.","10 je, ali misli da je zajednički račun dobar znak ozbiljnosti nakon par mjeseci.","10 je, ali nema nijednog bliskog prijatelja i kaže da su ljudi naporni.","10 je, ali ne voli kad izlaziš bez njega/nje jer 'nije mu/joj ugodno'.","10 je, ali uvijek mora biti u pravu, čak i kad rasprava nema pobjednika.","10 je, ali misli da se privatnost u vezi mora zaslužiti.","10 je, ali ne želi djecu i ne želi o tome razgovarati do 'kasnije'.","10 je, ali očekuje stalnu dostupnost na porukama.","10 je, ali jako je dobar/dobra prema tebi, a bezobrazan/bezobrazna prema konobarima.","10 je, ali misli da je normalno provjeravati partnerov/partneričin mobitel ako nema što skrivati.","10 je, ali smatra da je financijska tajna u vezi sasvim privatna stvar.","10 je, ali ne želi definirati odnos, ali očekuje ekskluzivnost.","10 je, ali kaže da je obitelj uvijek na prvom mjestu, čak i kad je obitelj toksična.","10 je, ali odbija terapiju jer 'nije lud/a', ali svaku svađu pretvara u rat.","10 je, ali misli da prijateljstvo s osobom koja ti se sviđala ne može biti stvarno.","10 je, ali ne želi dijeliti kućanske poslove jer 'svatko ima svoje standarde'.","10 je, ali smatra da je laž izbjegavanja konflikta ponekad znak zrelosti.","10 je, ali želi partnera/partnericu koji mu/joj se uklapa u plan, a ne osobu.","10 je, ali ne priznaje emocionalni rad kao stvaran rad.","10 je, ali ne želi izlaziti s osobom koja zarađuje znatno manje.","10 je, ali misli da se 'oprosti' ne računa ako nije namjerno.","10 je, ali ne bi oprostio/la emocionalnu prevaru, ali fizičku možda bi.","10 je, ali u vezi očekuje lojalnost prema sebi i kad nije u pravu.","10 je, ali smatra da parovi ne bi trebali imati odvojena putovanja.","10 je, ali ne želi biti s nekim tko je jako aktivan na društvenim mrežama.","10 je, ali misli da je normalno ostati prijatelj s bivšim/bivšom, ali ne bi volio/la da ti to radiš.","10 je, ali ne želi priznati vezu dok nije 'sigurno', ali očekuje sve benefite veze.","10 je, ali smatra da se politički stavovi ne moraju poklapati ako je kemija dobra.","10 je, ali ne želi partnera/partnericu koji ima dugove, čak i ako nisu nastali neodgovorno.","10 je, ali vjeruje da je ljubav dovoljna i kad komunikacija ne postoji.","10 je, ali očekuje da znaš što ga/ju muči bez da kaže.","10 je, ali smatra da je dijeljenje lozinki dokaz povjerenja.","10 je, ali misli da partner/partnerica mora biti najbolji prijatelj, terapeut i logističar.","10 je, ali ne želi razgovarati o novcu jer 'to kvari romantiku'.","10 je, ali misli da su odvojene sobe u vezi znak problema.","10 je, ali smeta mu/joj ako partner/partnerica ima blisku osobu suprotnog spola.","10 je, ali smatra da je ljubomora normalan dio svake ozbiljne veze.","10 je, ali očekuje da se svi tvoji planovi prilagode njegovoj/njezinoj karijeri.","10 je, ali ne želi mijenjati nijednu naviku jer 'takvog/takvu si me upoznao/la'."]}},"Nikad nisam":{"icon":"mask","description":"Priznanja bez starih, potrošenih pitanja. Tko je napravio, priznaje i preživljava pogled ekipe.","categories":{"Sramotne uspomene":["Nikad nisam mahnuo/la osobi koja nije mahala meni.","Nikad nisam zaboravio/la nečije ime odmah nakon upoznavanja.","Nikad nisam ušao/la u krivu prostoriju i pravio/la se da sam baš to htio/la.","Nikad nisam poslao/la poruku osobi o kojoj je poruka bila.","Nikad nisam slučajno lajkao/la staru objavu dok sam istraživao/la profil.","Nikad nisam se smijao/la vicu koji nisam razumio/la.","Nikad nisam glumio/la da znam pjesmu i pjevao/la samo zadnju riječ.","Nikad nisam se predstavio/la nekome koga sam već upoznao/la.","Nikad nisam rekao/la 'i tebi' u potpuno krivom trenutku.","Nikad nisam pokušao/la gurnuti vrata na kojima piše 'vuci'.","Nikad nisam ispao/la bezobrazan/bezobrazna jer nisam prepoznao/la osobu.","Nikad nisam pao/la ili se spotaknuo/la pa odmah pogledao/la je li itko vidio.","Nikad nisam poslao/la glasovnu i odmah požalio/la ton.","Nikad nisam prepričavao/la priču i na pola shvatio/la da nema poantu.","Nikad nisam rekao/la 'čujemo se' osobi s kojom nemam namjeru više pričati.","Nikad nisam zaboravio/la riječ usred rečenice i pokušao/la je zamijeniti zvukom.","Nikad nisam sjeo/la na mjesto koje očito nije bilo moje i držao/la se plana.","Nikad nisam pozdravio/la nekoga zagrljajem kad je osoba išla na rukovanje.","Nikad nisam pokušao/la biti kul i odmah se fizički ozlijedio/la.","Nikad nisam govorio/la o osobi dok je stajala iza mene.","Nikad nisam pobrkao/la imena dvoje ljudi koji se međusobno mrze.","Nikad nisam odgovorio/la na kompliment kao da sam upravo svjedočio/la zločinu.","Nikad nisam u panici rekao/la previše osobnih informacija nepoznatoj osobi.","Nikad nisam pravio/la se da razumijem uputu i onda napravio/la suprotno.","Nikad nisam zaboravio/la zašto sam nazvao/la nekoga dok je telefon zvonio.","Nikad nisam slučajno otvorio/la prednju kameru na javnom mjestu i uplašio/la se.","Nikad nisam poslao/la poruku bez interpunkcije pa zvučao/la ljuto bez razloga.","Nikad nisam krivo čuo/la pitanje i dao/la odgovor koji me progonio ostatak dana.","Nikad nisam pokušao/la izaći iz razgovora i završio/la u još dužem razgovoru.","Nikad nisam rekao/la 'dobar tek' konobaru/konobarici nakon što je donio/la hranu.","Nikad nisam mislio/la da me netko zove, a zapravo je pričao s psom ili djetetom.","Nikad nisam zaboravio/la tuđi rođendan i pravio/la se da čestitka kasni strateški.","Nikad nisam pogrešno izgovorio/la ime mjesta i odlučio/la nastaviti samouvjereno.","Nikad nisam pokušao/la otvoriti auto koji nije moj.","Nikad nisam slučajno odgovorio/la na pitanje koje nije bilo upućeno meni.","Nikad nisam u tišini napravio/la zvuk koji je bio preglasan za ignoriranje.","Nikad nisam glumio/la da pišem poruku kako bih izbjegao/la small talk.","Nikad nisam počeo/la pričati priču i shvatio/la da je osoba već bila tamo.","Nikad nisam zaboravio/la isključiti mikrofon u krivom trenutku.","Nikad nisam ostao/la zarobljen/a u pozdravljanju jer nismo znali je li zagrljaj ili pusa.","Nikad nisam slučajno poslao/la emoji koji je zvučao pasivno-agresivno.","Nikad nisam pokušao/la biti duhovit/a pred crushom i završio/la kao upozorenje.","Nikad nisam rekao/la nešto preglasno baš kad je glazba stala.","Nikad nisam pravio/la se da poznajem pravila igre i odmah izgubio/la.","Nikad nisam se pravio/la da tražim nešto u torbi samo da izbjegnem kontakt očima."],"Putovanja i avanture":["Nikad nisam se izgubio/la i tvrdio/la da samo istražujem.","Nikad nisam zakasnio/la na prijevoz zbog 'još samo pet minuta'.","Nikad nisam završio/la u pogrešnom busu, vlaku, tramvaju ili terminalu.","Nikad nisam spakirao/la odjeću za potpuno krivo godišnje doba.","Nikad nisam kupio/la suvenir toliko ružan da je postao dragocjen.","Nikad nisam koristio/la Google Translate i dobio/la nešto sramotno.","Nikad nisam upoznao/la nekoga na putu i ponašao/la se kao da smo prijatelji godinama.","Nikad nisam na putovanju potrošio/la više na gluposti nego na hranu.","Nikad nisam se vratio/la s puta s pričom koju ne mogu ispričati roditeljima.","Nikad nisam probao/la lokalnu hranu samo zbog pritiska ekipe.","Nikad nisam izgubio/la dokument, kartu ili boarding pass barem jednom u panici.","Nikad nisam spavao/la na aerodromu, kolodvoru ili u nekom jako čudnom kutu.","Nikad nisam rekao/la 'ovo je blizu' i onda hodao/la 50 minuta.","Nikad nisam se pravio/la da razumijem jezik koji ne razumijem.","Nikad nisam se vratio/la s putovanja umorniji/umornija nego prije odlaska.","Nikad nisam rezervirao/la smještaj zbog lijepih slika i ignorirao/la sve recenzije.","Nikad nisam otišao/la na 'kratku šetnju' i završio/la u drugom kvartu bez plana.","Nikad nisam ponio/la previše stvari i koristio/la iste tri cijelo putovanje.","Nikad nisam ponio/la premalo stvari i kupovao/la osnovne stvari po turističkim cijenama.","Nikad nisam imao/la svađu s kartom, navigacijom ili osobom koja ju je čitala.","Nikad nisam ušao/la u restoran samo zato što je izgledao autentično i odmah požalio/la.","Nikad nisam snimio/la 200 fotografija i nijednu dobru.","Nikad nisam rekao/la 'ne trebamo rezervaciju' i naučio/la lekciju.","Nikad nisam zaboravio/la punjač i pregovarao/la s baterijom kao s taocem.","Nikad nisam završio/la na lokalnom događaju bez pojma što se slavi.","Nikad nisam bio/la uvjeren/a da znam put natrag i dokazao/la suprotno.","Nikad nisam kupio/la kartu za krivi datum ili krivo vrijeme.","Nikad nisam uspio/la se posvađati s bankomatom u drugoj državi.","Nikad nisam napravio/la itinerar koji se raspao do doručka.","Nikad nisam otišao/la na izlet jer je pisalo 'lagana ruta' i skoro upoznao/la svoje granice.","Nikad nisam izgubio/la ekipu u stranoj državi i ponašao/la se smireno samo izvana.","Nikad nisam miješao/la valute toliko loše da sam platio/la emocionalnu štetu.","Nikad nisam prošao/la pored znamenitosti jer sam gledao/la u mobitel.","Nikad nisam spakirao/la stvari tako loše da sam svaki put morao/la vaditi sve.","Nikad nisam odabrao/la smještaj 'blizu centra' koji je bio blizu centra druge osobe.","Nikad nisam završio/la u turističkoj zamci i branio/la odluku kao iskustvo.","Nikad nisam kupio/la magnet, razglednicu ili šalicu koju nikad nisam trebao/la.","Nikad nisam otišao/la na put s osobom i tek tamo upoznao/la njezinu pravu osobnost.","Nikad nisam mislio/la da znam osnovne fraze na jeziku i zvučao/la kao dijete robota.","Nikad nisam jeo/la nešto samo zato što je konobar uvjerljivo kimnuo.","Nikad nisam preživio/la putovanje zahvaljujući jednoj organiziranoj osobi u grupi.","Nikad nisam poslao/la lokaciju ekipi jer nisam znao/la objasniti gdje sam.","Nikad nisam odlučio/la 'živjeti kao lokalac' i odmah napravio/la nešto jako turistički.","Nikad nisam kupio/la nešto na aerodromu iz dosade i financijske slabosti.","Nikad nisam vratio/la se s putovanja s više unutarnjih fora nego suvenira."],"Lude noćne priče":["Nikad nisam završio/la na afteru gdje nisam znao/la čiji je stan.","Nikad nisam naručio/la hranu noću i zaspao/la prije dostave.","Nikad nisam izgubio/la prijatelja u izlasku pa ga našao/la u potpuno novoj ekipi.","Nikad nisam imao/la duboki životni razgovor s osobom čije ime ne znam.","Nikad nisam plesao/la na pjesmu koju inače javno prezirem.","Nikad nisam obećao/la 'idemo lagano' pa se vratio/la doma kad se budilo sunce.","Nikad nisam se probudio/la s predmetom koji definitivno nije moj.","Nikad nisam morao/la rekonstruirati večer iz tuđih storyja.","Nikad nisam slučajno postao/la organizator večeri jer nitko drugi nije imao plan.","Nikad nisam rekao/la 'još jedno i idem' više od tri puta zaredom.","Nikad nisam završio/la na mjestu gdje nitko ne zna kako smo došli.","Nikad nisam pjevao/la toliko glasno da sam sutradan imao/la promukli glas bez jasnog razloga.","Nikad nisam mislio/la da sam izgubio/la mobitel dok sam ga držao/la u ruci.","Nikad nisam u izlasku postao/la najbolji prijatelj s nekim na jednu noć.","Nikad nisam sutradan slao/la poruke tipa 'što sam točno rekao/la?'.","Nikad nisam otišao/la po vodu i vratio/la se s novom pričom, novom ekipom i bez vode.","Nikad nisam napustio/la klub na pet minuta i propustio/la najvažniji kaos večeri.","Nikad nisam uvjeravao/la sve da sam dobro orijentiran/a i poveo/la ih u krivom smjeru.","Nikad nisam zapamtio/la samo refren večeri i ništa između.","Nikad nisam dao/la savjet o ljubavi osobi koju sam upoznao/la prije 12 minuta.","Nikad nisam odjednom postao/la DJ bez dozvole.","Nikad nisam završio/la na fotografiji s ljudima koje više nikad ne bih prepoznao/la.","Nikad nisam pokušao/la naručiti jednostavno piće i završio/la s nečim svijetlećim.","Nikad nisam obećao/la da neću objavljivati, pa objavio/la najgori mogući kut.","Nikad nisam imao/la raspravu o smislu života pored zvučnika.","Nikad nisam izgubio/la jaknu, pronašao/la jaknu i shvatio/la da nije moja.","Nikad nisam rekao/la nekom nepoznatom 'čuvaj se, ti si dobar čovjek'.","Nikad nisam napravio/la plan za sutra u 3 ujutro kao da će se stvarno dogoditi.","Nikad nisam zaspao/la u autu, taxiju ili na kauču dok je večer još trajala.","Nikad nisam na kraju večeri jeo/la nešto što trijezan/trijezna ne bih priznao/la.","Nikad nisam mislio/la da sam jako tih/a, a svi su me čuli.","Nikad nisam ušao/la u raspravu s izbacivačem, taksistom ili aparatom za hranu.","Nikad nisam pomirio/la dvije osobe koje se nisu ni svađale.","Nikad nisam pronašao/la 'najbolje mjesto ikad' i sutradan ne znao/la gdje je.","Nikad nisam završio/la u karaoke trenutku bez prethodnog pristanka.","Nikad nisam poslao/la poruku koja je trebala ostati u nacrtima do kraja civilizacije.","Nikad nisam vratio/la se kući s planom za novi život.","Nikad nisam izgubio/la pojam o vremenu toliko da je jutro bilo nepristojno.","Nikad nisam uvjerio/la ekipu da idemo na 'samo jedno mjesto' i obišao/la četiri.","Nikad nisam bio/la glas razuma i onda prvi/prva promijenio/la mišljenje.","Nikad nisam sreo/la osobu iz prošlosti u najgorem mogućem stanju.","Nikad nisam pokušao/la glumiti trezvenost pred osobom koja zna sve znakove.","Nikad nisam kupio/la nešto na kiosku kao da je gurmansko iskustvo.","Nikad nisam imao/la noć koja zvuči izmišljeno čak i meni.","Nikad nisam zaključio/la da je 'nikad više' realan plan, pa ga prekršio/la sljedeći put."],"Digitalni tragovi":["Nikad nisam poslao/la screenshot pogrešnoj osobi.","Nikad nisam pregledao/la nečiji profil toliko detaljno da sam znao/la raspored života.","Nikad nisam obrisao/la story jer nitko nije reagirao kako sam očekivao/la.","Nikad nisam napisao/la komentar pa ga obrisao/la jer sam zvučao/la previše zainteresirano.","Nikad nisam otvorio/la poruku samo kroz notifikaciju da ne ostavim seen.","Nikad nisam imao/la lažni izgovor zašto nisam odgovorio/la, iako sam bio/la online.","Nikad nisam arhivirao/la chat da ne gledam vlastitu sramotu.","Nikad nisam slučajno poslao/la emoji koji je promijenio cijeli ton poruke.","Nikad nisam čuvao/la screenshot za slučaj da 'zatreba'.","Nikad nisam objavio/la nešto samo da jedna osoba vidi.","Nikad nisam pretvarao/la se da nisam vidio/la story u kojem sam spomenut/a.","Nikad nisam promijenio/la profilnu sliku nakon prekida, svađe ili nove faze osobnosti.","Nikad nisam napisao/la pasivno-agresivni status bez imena.","Nikad nisam guglao/la što znači nečiji kriptični opis profila.","Nikad nisam izbrisao/la poruku i nadao/la se da nitko neće pitati što je pisalo.","Nikad nisam poslao/la glasovnu bez slušanja i kasnije živio/la u strahu.","Nikad nisam namjerno ostavio/la nekoga na seen da ne izgledam previše dostupan/dostupna.","Nikad nisam otvorio/la stari chat i emocionalno se spotaknuo/la.","Nikad nisam napravio/la close friends listu iz potpuno strateških razloga.","Nikad nisam provjeravao/la tko je gledao story kao da čitam rezultate izbora.","Nikad nisam objavio/la pjesmu s porukom i pretvarao/la se da nema poruku.","Nikad nisam pretraživao/la nečiji profil preko profila prijatelja.","Nikad nisam slučajno reagirao/la na story dok sam samo istraživao/la.","Nikad nisam imao/la poruku napisanu i ne poslao/la je danima.","Nikad nisam obrisao/la aplikaciju da ne odgovorim, pa je vratio/la nakon sat vremena.","Nikad nisam promijenio/la status aktivnosti zbog jedne osobe.","Nikad nisam pokušao/la zvučati opušteno u poruci i zvučao/la kao odvjetnik.","Nikad nisam poslao/la 'haha' bez ijednog osmijeha.","Nikad nisam imao/la lažni razlog zašto nisam prihvatio/la zahtjev za praćenje.","Nikad nisam pregledao/la nečiji highlight do opasne dubine.","Nikad nisam kliknuo/la na profil osobe koju 'uopće ne zanima'.","Nikad nisam spremao/la poruke kao dokaz za budući razgovor.","Nikad nisam poslao/la meme umjesto stvarnog odgovora jer nisam znao/la što osjećam.","Nikad nisam vratio/la se na staru objavu i pitao/la se tko sam tada bio/la.","Nikad nisam pisao/la poruku u notesu prije nego sam je poslao/la.","Nikad nisam ugasio/la internet da ne dođe poruka koju čekam.","Nikad nisam objavio/la story i odmah požalio/la kut, tekst ili osobnost.","Nikad nisam pogledao/la profil nove osobe bivšeg/bivše i glumio/la da nisam.","Nikad nisam koristio/la nečiji horoskop kao forenzički alat.","Nikad nisam mijenjao/la caption tri puta jer sam previše mislio/la.","Nikad nisam kliknuo/la na oglas i onda mjesec dana gledao/la kaznu algoritma.","Nikad nisam slučajno otvorio/la poruku u najgorem mogućem trenutku.","Nikad nisam prepoznao/la osobu iz aplikacije uživo i pravio/la se da ne znam.","Nikad nisam napravio/la screenshot chata i sakrio/la ga kao državnu tajnu.","Nikad nisam blokirao/la pa odblokirao/la nekoga bez jasnog plana."],"Obitelj, posao i faks":["Nikad nisam glumio/la bolest jer mi se nije išlo među ljude.","Nikad nisam na sastanku ili predavanju klimao/la glavom bez ijedne misli u glavi.","Nikad nisam rekao/la 'poslat ću odmah' i poslao/la satima kasnije.","Nikad nisam zakasnio/la i okrivio/la promet iako sam kasno krenuo/la.","Nikad nisam zaboravio/la važan rok i pokušao/la izgledati smireno.","Nikad nisam koristio/la 'nisam vidio/la mail' kao diplomatsku laž.","Nikad nisam imao/la obiteljski ručak koji se pretvorio u političku emisiju.","Nikad nisam se sakrio/la u kupaonicu da izbjegnem razgovor.","Nikad nisam pravio/la se zaposleno kad nisam imao/la pojma što radim.","Nikad nisam otvorio/la laptop samo da izgledam produktivno.","Nikad nisam morao/la objašnjavati roditeljima posao koji ni sam/a ne razumijem.","Nikad nisam rekao/la 'samo sam umoran/umorna' kad sam zapravo bio/la društveno prazan/prazna.","Nikad nisam improvizirao/la cijelu prezentaciju.","Nikad nisam prešutio/la grešku nadajući se da će nestati sama.","Nikad nisam imao/la mini krizu identiteta zbog jednog komentara šefa, profesora ili člana obitelji.","Nikad nisam na pozivu rekao/la 'vidimo se' iako nitko nije imao kameru.","Nikad nisam poslao/la mail bez privitka i glumio/la da je to test pažnje.","Nikad nisam koristio/la isti dokument kao bazu toliko puta da je zadržao tuđe ime.","Nikad nisam rekao/la 'samo kratko pitanje' i otvorio/la problem od 45 minuta.","Nikad nisam imao/la obiteljski razgovor u kojem sam postao/la tehnička podrška.","Nikad nisam izbjegavao/la susjeda, kolegu ili rođaka kao da igram stealth misiju.","Nikad nisam kasnio/la s odgovorom toliko dugo da je postalo lakše ne odgovoriti.","Nikad nisam bio/la na sastanku koji je mogao biti jedna rečenica.","Nikad nisam pravio/la se da zapisujem, a crtao/la emocionalnu štetu.","Nikad nisam otvorio/la tablicu i osjetio/la kako mi duša napušta tijelo.","Nikad nisam rekao/la 'razumijem' i odmah guglao/la osnovni pojam.","Nikad nisam zaboravio/la rođendan člana obitelji i spašavao/la se emotikonom.","Nikad nisam imao/la radni/fakultetski zadatak koji sam započeo/la iz panike, ne iz discipline.","Nikad nisam odgodio/la nešto toliko puta da je postalo dio identiteta.","Nikad nisam ostao/la pristojan/pristojna dok mi je duša vikala.","Nikad nisam u grupnom projektu radio/la sve ili ništa, bez sredine.","Nikad nisam pravio/la se da sam pročitao/la dokument koji sam samo otvorio/la.","Nikad nisam kliknuo/la 'reply all' i osjetio/la hladan znoj.","Nikad nisam dobio/la poziv od roditelja i odmah pomislio/la da se nešto dogodilo.","Nikad nisam u razgovoru s obitelji promijenio/la temu kao profesionalni moderator.","Nikad nisam završio/la zadatak pet minuta prije roka i nazvao/la to radom pod pritiskom.","Nikad nisam prihvatio/la obavezu jer nisam znao/la kako reći ne.","Nikad nisam rekao/la 'nije problem' dok je bio ogroman problem.","Nikad nisam na poslu ili faksu imao/la omiljenu šalicu, stolicu ili utičnicu.","Nikad nisam u obiteljskom razgovoru koristio/la 'aha' kao obrambeni zid.","Nikad nisam imao/la planer koji više služi kao dokaz dobrih namjera.","Nikad nisam obrisao/la obavijest pa zaboravio/la da obveza postoji.","Nikad nisam morao/la glumiti odraslu osobu dok sam mentalno tražio/la nadzor.","Nikad nisam na sastanku shvatio/la da sam jedina osoba koja ne zna što se događa.","Nikad nisam rekao/la da sam 'skoro gotov/a' dok nisam ni počeo/la."],"Ljubavne greške":["Nikad nisam slao/la poruku i čekao/la odgovor kao da mi ovisi karijera.","Nikad nisam tvrdio/la da mi nije stalo, a provjeravao/la sam sve društvene mreže.","Nikad nisam ostao/la u dopisivanju duže nego što je imalo smisla.","Nikad nisam dao/la drugu šansu jer je osoba lijepo mirisala.","Nikad nisam ignorirao/la red flag jer je kemija bila predobra.","Nikad nisam poslao/la 'slučajnu' poruku koja nije bila slučajna.","Nikad nisam analizirao/la nečiji odgovor s prijateljima kao da je pravni dokument.","Nikad nisam se pravio/la hladan/hladna i onda paničario/la kad je druga osoba povjerovala.","Nikad nisam predugo ostao/la u nečemu jer mi je bilo neugodno prekinuti.","Nikad nisam rekao/la 'ne tražim ništa ozbiljno' i onda se ponašao/la posesivno.","Nikad nisam provjeravao/la je li osoba gledala moj story.","Nikad nisam uspoređivao/la sebe s novom osobom bivšeg/bivše.","Nikad nisam se vratio/la razgovoru koji je već trebao ostati mrtav.","Nikad nisam se zaljubio/la u potencijal, a ne u realnu osobu.","Nikad nisam ignorirao/la savjet prijatelja i kasnije morao/la priznati da su bili u pravu.","Nikad nisam namjerno čekao/la s odgovorom da izgledam opušteno.","Nikad nisam prebrzo rekao/la nešto što je trebalo pričekati treći mjesec.","Nikad nisam imao/la plan za slučajan susret koji nije bio slučajan.","Nikad nisam prekinuo/la nešto u glavi prije nego sam razgovarao/la s osobom.","Nikad nisam prihvatio/la minimalan trud kao romantičnu misteriju.","Nikad nisam branio/la osobu pred prijateljima i potajno znao/la da su u pravu.","Nikad nisam dao/la nekome nadimak prije nego je odnos imao temelje.","Nikad nisam imao/la playlistu za osobu koja nije zaslužila ni jednu pjesmu.","Nikad nisam pogrešno protumačio/la ljubaznost kao sudbinu.","Nikad nisam rekao/la da mi treba prostor, a zapravo sam htio/la testirati reakciju.","Nikad nisam poslao/la poruku nakon ponoći i nazvao/la to iskrenošću.","Nikad nisam se zaljubio/la u osobu jer mi je jednom otvorila vrata emocionalno i doslovno.","Nikad nisam pratio/la tuđi online status kao vremensku prognozu.","Nikad nisam pretvarao/la se da ne čekam poruku dok sam čekao/la poruku.","Nikad nisam vratio/la se bivšem/bivšoj jer mi je bilo poznato, ne dobro.","Nikad nisam ušao/la u odnos misleći da mogu popraviti osobu.","Nikad nisam napravio/la cijelu teoriju iz interpunkcije.","Nikad nisam rekao/la 'nema veze' kad je imalo jako puno veze.","Nikad nisam glumio/la nezainteresiranost do vlastite štete.","Nikad nisam pristao/la na dejt iako sam znao/la da nema kemije, samo iz pristojnosti.","Nikad nisam imao/la crush na osobu koju sam izmislio/la u svojoj glavi.","Nikad nisam prepoznao/la red flag i pretvorio/la ga u dekoraciju.","Nikad nisam usporedio/la svaku novu osobu s nekom starom pričom.","Nikad nisam ostao/la u odnosu jer je početak bio dobar.","Nikad nisam tražio/la znak i onda ignorirao/la najjasniji mogući znak.","Nikad nisam napisao/la poruku, izbrisao/la je i svejedno je poslao/la kasnije.","Nikad nisam se ponašao/la normalno pred osobom i mentalno održavao/la konferenciju.","Nikad nisam dao/la nekome previše moći samo zato što je bio/la nedostupan/nedostupna.","Nikad nisam nazvao/la kaos strašću jer je zvučalo ljepše.","Nikad nisam priznao/la osjećaje u trenutku koji nije imao logističku šansu."]}},"Što bi radije?":{"icon":"split","description":"Dvije opcije. Obje neugodne, apsurdne ili sumnjivo primamljive. Nema bijega u 'ne znam'.","categories":{"Supermoći s kvarom":["Bi li radije mogao/la čitati misli, ali samo kad ljudi misle loše o tebi, ili biti nevidljiv/a samo kad te nitko ne traži?","Bi li radije imao/la superbrzinu, ali svaki put izgubiš jednu cipelu, ili teleportaciju koja te uvijek izbaci 200 metara od cilja?","Bi li radije mogao/la letjeti, ali samo 40 cm iznad tla, ili disati pod vodom, ali samo u kadi?","Bi li radije mogao/la zaustaviti vrijeme, ali samo dok pereš suđe, ili vratiti 10 sekundi unatrag, ali svi oko tebe to primijete?","Bi li radije imao/la rendgenski vid koji radi samo kroz hladnjake, ili super sluh koji čuje samo susjedove svađe?","Bi li radije mogao/la pričati sa životinjama, ali te sve osuđuju, ili pričati s biljkama, ali su jako pasivno-agresivne?","Bi li radije imao/la moć da nestaneš iz neugodne situacije, ali se pojaviš u još neugodnijoj, ili moć da svi zaborave što si rekao/la osim jedne osobe?","Bi li radije bio/la besmrtan/besmrtna, ali zauvijek s istom frizurom, ili vječno mlad/a, ali stalno moraš objašnjavati osobnu iskaznicu?","Bi li radije imao/la moć savršenog izgovora, ali ga možeš koristiti samo za gluposti, ili moć uvjeravanja koja radi samo na ljudima koji se već slažu?","Bi li radije mogao/la vidjeti budućnost, ali samo svoje sramotne trenutke, ili vidjeti prošlost, ali samo trenutke kad si bio/la u krivu?","Bi li radije imao/la telekinezu, ali možeš pomicati samo predmete koje netko drugi baš treba, ili super snagu koja radi samo kad nosiš pidžamu?","Bi li radije mogao/la mijenjati vrijeme, ali samo unutar jedne sobe, ili kontrolirati vjetar, ali samo dovoljno da pokvariš frizuru?","Bi li radije mogao/la postati nevidljiv/a, ali odjeća ostaje vidljiva, ili čitati misli, ali samo na jeziku koji ne razumiješ?","Bi li radije imao/la moć liječenja, ali svaki put dobiješ štucavicu od sat vremena, ili moć teleportacije, ali svaki dolazak ima dramatičan dimni efekt?","Bi li radije mogao/la razgovarati s budućim sobom, ali budući ti stalno izbjegava odgovore, ili razgovarati s prošlim sobom, ali prošli ti ne sluša savjete?","Bi li radije imao/la superpamćenje, ali samo za neugodne detalje, ili zaboravljao/la sve loše, ali i sve korisne lozinke?","Bi li radije mogao/la stvoriti hranu iz ničega, ali uvijek je mlaka, ili stvoriti piće iz ničega, ali uvijek je malo preslatko?","Bi li radije mogao/la promijeniti izgled na sat vremena, ali svi znaju da si to ti, ili promijeniti glas, ali samo u glas osobe koju nitko ne voli?","Bi li radije imao/la moć savršenog parkinga, ali samo kad ne voziš, ili moć pronalaska izgubljenih stvari, ali tek nakon što kupiš novu?","Bi li radije mogao/la postati genij za jedan predmet dnevno, ali nitko ne pita za taj predmet, ili biti stručnjak za sve, ali zvučati nevjerojatno nesigurno?","Bi li radije mogao/la usporiti vrijeme, ali samo dok netko priča dosadnu priču, ili ubrzati vrijeme, ali samo tijekom vikenda?","Bi li radije imao/la laserski pogled koji reže samo ambalažu, ili ledeni dah koji rashladi piće, ali uništi razgovor?","Bi li radije mogao/la prizvati bilo koga, ali osoba stiže ljuta, ili nestati kad god želiš, ali ostaviš za sobom neugodan miris dima?","Bi li radije imao/la savršen instinkt za opasnost, ali alarmira i na loše poruke, ili nikad ne osjećati strah, ali svi misle da nemaš samokontrole?","Bi li radije mogao/la čuti istinu u tuđem glasu, ali ne možeš dokazati ništa, ili prepoznati laž, ali svaki put moraš glasno kihnuti?","Bi li radije imao/la moć da popraviš elektroniku dodirom, ali pokvariš namještaj, ili popravljaš odnose jednim razgovorom, ali zaboraviš svoj PIN?","Bi li radije mogao/la otvoriti svaka vrata, ali samo kad nemaš gdje ići, ili zatvoriti svaku raspravu, ali zadnja rečenica bude užasna?","Bi li radije imao/la superreflekse, ali samo za hvatanje stvari koje nisu tvoje, ili savršen balans, ali samo dok nitko ne gleda?","Bi li radije mogao/la znati tko te ogovara, ali ne i što kaže, ili znati što kaže, ali ne i tko govori?","Bi li radije imao/la moć da dobiješ svaku igru, ali svi prestanu igrati s tobom, ili da uvijek izgubiš, ali svi te obožavaju zbog energije?"],"Tehnologija protiv tebe":["Bi li radije da ti mobitel svaki dan javno pročita jednu nasumičnu poruku, ili da ti povijest pretraživanja jednom mjesečno dobije obitelj?","Bi li radije imao/la pametni frižider koji te osuđuje naglas, ili pametni sat koji šalje loše odluke u grupni chat?","Bi li radije da ti se svaka lozinka promijeni jednom tjedno, ili da ti se kamera uvijek uključi tri sekunde prije videopoziva?","Bi li radije zauvijek imati 3% baterije i punjač blizu, ili 100% baterije i signal samo kad ti ne treba?","Bi li radije da te algoritam savršeno poznaje, ali te stalno provocira, ili da te uopće ne poznaje i prikazuje ti samo reklame za printere?","Bi li radije izgubio/la mogućnost brisanja poruka, ili mogućnost pravljenja screenshotova?","Bi li radije da ti autocorrect uvijek mijenja 'ok' u 'volim te', ili da ti 'hvala' mijenja u 'dužan/dužna si mi'?","Bi li radije imati AI asistenta koji sve obavi savršeno, ali sarkastično komentira tvoj život, ili robota koji šuti, ali sve radi 20% krivo?","Bi li radije da ti se svaki mail automatski pošalje bez zadnjeg čitanja, ili da svaki story ostane online 48 sati bez brisanja?","Bi li radije da tvoj telefon vibrira svaki put kad netko priča o tebi, ili da ne vibrira nikad, čak ni za važne poruke?","Bi li radije da ti se sve glasovne automatski transkribiraju u grupni chat, ili da svaka tvoja poruka dobije automatski dramatičan ton?","Bi li radije da ti laptop radi savršeno, ali samo na 1% baterije, ili da ti mobitel ima beskonačnu bateriju, ali zvuk tipkovnice je uvijek uključen?","Bi li radije da ti se svaki video preporuči točno prema najgoroj verziji tebe, ili da ti se nikad ne preporuči ništa korisno?","Bi li radije da svaki put kad otključaš mobitel izgovori tvoju zadnju pretragu, ili da svaki put kad zaključaš mobitel pošalje nekome random emoji?","Bi li radije živjeti bez interneta vikendom, ili živjeti s internetom koji radi samo kad si vani?","Bi li radije imati pametnu kuću koja sve zna, ali je sitničava, ili imati običnu kuću u kojoj se svaki prekidač ponaša kao zagonetka?","Bi li radije da ti slušalice uvijek budu 2% prazne, ili da ti jedna slušalica uvijek kasni pola sekunde?","Bi li radije da ti kamera uvijek izgleda kao sigurnosna snimka, ili da ti mikrofon uvijek zvuči kao da si u tunelu?","Bi li radije da se svi tvoji draftovi objave jednom godišnje, ili da se sve tvoje obrisane slike vrate kao screensaver?","Bi li radije da ti aplikacije šalju iskrene push obavijesti o tvojim navikama, ili da ti kalendar sam dodaje obaveze na temelju krivnje?","Bi li radije da se svaka poruka mora poslati glasovno, ili da svaki poziv mora početi video uvodom od deset sekundi?","Bi li radije da ti navigacija uvijek bira najkraći put kroz najčudnije ulice, ili da uvijek bira najljepši put koji traje duplo dulje?","Bi li radije da ti se mobitel puni samo dok ga ne koristiš, ili da se puni brzo, ali se zagrije kao emocionalna rasprava?","Bi li radije da svi vide kad screenshot-aš, ili da ti nikad ne znaš kad netko screenshot-a tebe?","Bi li radije da ti mail automatski zvuči preljubazno, ili da ti poruke automatski zvuče pasivno-agresivno?","Bi li radije da ti se streaming servis stalno vraća na epizodu koju ne voliš, ili da ti svaki film počne s posljednjih pet minuta?","Bi li radije da ti telefon sam odgovara 'može' na pozive, ili da sam odbija pozive i šalje 'trenutno sam u razvoju'?","Bi li radije da ti društvene mreže prikazuju samo uspjehe ljudi koje ne želiš vidjeti, ili samo svoje stare objave iz najgore faze?","Bi li radije imati savršen digitalni asistent koji zove tvoju mamu za svaku odluku, ili imati loš asistent koji svima govori da radi najbolje što može?","Bi li radije da ti se svaka online kupnja prikaže prijateljima, ili da ti se svaka neuspjela pretraga prikaže roditeljima?"],"Svakodnevni horor":["Bi li radije svaki dan nosio/la novu odjeću koja malo žulja, ili istu odjeću koja savršeno miriše?","Bi li radije zauvijek čekao/la lift koji dolazi sporo, ili uvijek hodao/la stepenicama s osobom koja priča preglasno?","Bi li radije svaki obrok jesti iz premale zdjele, ili piti svako piće iz šalice bez ručke?","Bi li radije da ti se svaka čarapa malo smoči, ili da ti svaka stolica bude malo preniska?","Bi li radije uvijek imati jednu mrvicu u krevetu, ili jedan kamenčić u cipeli?","Bi li radije da ti svako jutro netko postavi pitanje prije kave, ili da ti svaku večer netko kaže 'moramo razgovarati' bez razloga?","Bi li radije uvijek stajati u najsporijem redu, ili uvijek sjediti pored osobe koja želi small talk?","Bi li radije uvijek zaboraviti zašto si ušao/la u sobu, ili uvijek zaboraviti gdje si ostavio/la ključeve?","Bi li radije imati savršen stan s lošim susjedima, ili loš stan sa savršenim susjedima?","Bi li radije svaki put kad kažeš 'samo kratko' pričati 45 minuta, ili svaki put kad kažeš 'imam vremena' odmah kasniti?","Bi li radije svaki sendvič jesti s previše umaka, ili svaku juhu jesti premalom žlicom?","Bi li radije uvijek pronaći parkirno mjesto, ali predaleko, ili uvijek biti blizu, ali nikad imati sitno za parking?","Bi li radije imati krevet koji je savršen, ali jastuk grozan, ili imati savršen jastuk, ali krevet koji škripi?","Bi li radije da ti se rukavi smoče svaki put kad pereš ruke, ili da ti se nogavice zapnu svaki put kad hodaš stepenicama?","Bi li radije uvijek čekati osobu koja kasni 12 minuta, ili uvijek biti osoba koja kasni 4 minute i svi to pamte?","Bi li radije svaki put otvoriti pogrešnu ladicu, ili svaki put zatvoriti ladicu kukom majice?","Bi li radije uvijek imati hladnu kavu, ili uvijek imati vruću vodu kad želiš hladnu?","Bi li radije imati susjeda koji buši samo subotom, ili susjeda koji vježba flautu samo nedjeljom?","Bi li radije svaki put kad legneš sjetiti se jedne obaveze, ili svaki put kad se digneš zaboraviti zašto?","Bi li radije uvijek izabrati krivu blagajnu, ili uvijek stati iza osobe koja plaća kovanicama iz arheologije?","Bi li radije imati savršenu temperaturu u sobi, ali loše svjetlo, ili savršeno svjetlo, ali temperaturu koju nitko ne može podnijeti?","Bi li radije svaki ručak jesti s tupim nožem, ili svaki doručak s tanjurom koji se klacka?","Bi li radije da ti se svaka naljepnica skida u komadićima, ili da svaka ambalaža puca na najgorem mjestu?","Bi li radije zauvijek nositi ruksak s jednom pokvarenom naramenicom, ili torbu koja uvijek sklizne s ramena?","Bi li radije da ti se svaki alarm čuje kao tuđa melodija, ili da se svaki ringtone čuje kao alarm?","Bi li radije uvijek imati jednu neodgovorenu poruku koja te gleda, ili uvijek imati jednu obvezu koju ne možeš pronaći?","Bi li radije jesti svaku pizzu malo prehladnu, ili svaku tjesteninu malo prekuhanu?","Bi li radije da ti se svaka vrata otvaraju prema tebi kad nosiš nešto, ili da se svaka kvaka zakači za rukav?","Bi li radije uvijek zaboraviti kišobran kad pada kiša, ili uvijek nositi kišobran kad je sunce i svi komentiraju?","Bi li radije imati savršeno tih stan, ali jako glasnu unutarnju paniku, ili glasan stan, ali potpunu unutarnju smirenost?"],"Društvena katastrofa":["Bi li radije da svatko zna kad lažeš, ili da svatko zna kad prešutiš istinu?","Bi li radije da se svaka tvoja glasovna pusti na zvučnik, ili da se svaki tvoj tipfeler automatski ispravi u nešto gore?","Bi li radije uvijek reći što misliš, ili nikad ne moći objasniti što si zapravo mislio/la?","Bi li radije da te svi pamte po najgorem prvom dojmu, ili po jednoj rečenici izvađenoj iz konteksta?","Bi li radije da ti se svaka neugodna tišina produži za 30 sekundi, ili da svaki izlaz iz razgovora izgleda jako očito?","Bi li radije na svakom okupljanju sjediti pored najglasnije osobe, ili pored osobe koja sve pretvara u raspravu?","Bi li radije da ti svaka šala uspije, ali povrijedi jednu osobu, ili da ti nijedna šala ne uspije, ali svi znaju da si pokušao/la?","Bi li radije da te uvijek netko predstavi pogrešnim zanimanjem, ili pogrešnim ljubavnim statusom?","Bi li radije da svi vide kad si ljubomoran/ljubomorna, ili kad glumiš da ti je svejedno?","Bi li radije da ti svaka isprika zvuči neiskreno, ili da svaka kritika zvuči kao napad?","Bi li radije uvijek morati prvi/prva započeti razgovor, ili uvijek morati završiti razgovor koji ne zna umrijeti?","Bi li radije da se svaki kompliment koji daš shvati kao flert, ili da se svaki flert koji pokušaš shvati kao kompliment za prijatelja?","Bi li radije biti poznat/a kao osoba koja uvijek kasni, ili kao osoba koja uvijek dođe prerano i stoji sama?","Bi li radije svaku tajnu slučajno reći u pogrešnom društvu, ili nikad ne moći dokazati da si stvarno čuvao/la tajnu?","Bi li radije uvijek biti snimljen/a u najgorem trenutku, ili nikad ne biti na fotografiji kad izgledaš dobro?","Bi li radije da ti svaka poruka zvuči hladno, ili da ti svaki razgovor uživo zvuči preintenzivno?","Bi li radije uvijek sjediti između dvije osobe koje se ne podnose, ili između dvije osobe koje se previše sviđaju jedna drugoj?","Bi li radije da te svi pitaju za savjet, ili da nitko ne posluša savjet koji je zapravo dobar?","Bi li radije da na svakom druženju moraš držati zdravicu, ili da na svakom druženju netko drži zdravicu o tebi?","Bi li radije uvijek biti osoba koja bira restoran, ili uvijek biti osoba koju svi krive za restoran?","Bi li radije da svaki tvoj trač odmah dođe do osobe o kojoj je, ili da svaki dobar trač zaboraviš baš kad ga trebaš ispričati?","Bi li radije da uvijek upoznaš roditelje prerano, ili da uvijek upoznaš bivše prerano?","Bi li radije da ti se svaka šutnja tumači kao stav, ili da ti se svaka rečenica tumači kao napad?","Bi li radije da svi čuju tvoj unutarnji monolog na prvom dejtu, ili da svi vide statistiku koliko puta si provjerio/la mobitel?","Bi li radije uvijek biti preiskren/a u pogrešnom trenutku, ili prepristojan/prepristojna kad trebaš biti direktan/direktna?","Bi li radije da te grupa uvijek izabere za pregovarača, ili da te grupa uvijek izabere za osobu koja zove nepoznate ljude?","Bi li radije imati reputaciju dramatične osobe i biti u pravu, ili imati reputaciju smirene osobe i tiho gorjeti?","Bi li radije da svaki put kad ogovaraš osoba uđe u prostoriju, ili da svaki put kad hvališ osoba čuje samo zadnju, najčudniju rečenicu?","Bi li radije uvijek zaboraviti ime osobe koju svi znaju, ili uvijek pamtiti previše detalja pa zvučati jezivo?","Bi li radije da tvoj smijeh uvijek bude preglasan, ili da tvoj smijeh nikad ne izađe kad je stvarno smiješno?"],"Životne zamjene":["Bi li radije zamijenio/la posao s roditeljem na tjedan dana, ili mobitel s najboljim prijateljem na jedan dan?","Bi li radije da svi tvoji snovi postanu javni, ili da svi tvoji planovi propadnu čim ih najaviš?","Bi li radije uvijek znati točan razlog zašto te netko ne voli, ili nikad ne znati tko te iskreno voli?","Bi li radije imati puno novca, ali svi misle da si dosadan/dosadna, ili biti jako zanimljiv/a, ali uvijek bez novca?","Bi li radije živjeti u savršenom stanu s lošim internetom, ili u ružnom stanu s internetom kao NASA?","Bi li radije zauvijek imati sjajne savjete za druge i nikad za sebe, ili savršeno rješavati svoje probleme i biti katastrofa za tuđe?","Bi li radije da ti svaki ponedjeljak počne kao odličan petak, ili da ti svaki petak završi kao težak ponedjeljak?","Bi li radije uvijek dobiti ono što želiš godinu dana prekasno, ili uvijek na vrijeme, ali u krivoj verziji?","Bi li radije da te svi smatraju pouzdanom osobom pa ti sve delegiraju, ili nepouzdanom pa te nitko ne pita ništa?","Bi li radije da ti život ima soundtrack koji svi čuju, ili titlove koje svi vide?","Bi li radije živjeti godinu dana bez ogledala, ili živjeti godinu dana s ogledalom koje komentira odluke?","Bi li radije zamijeniti stil odijevanja s osobom iz grupe, ili zamijeniti povijest pretraživanja s osobom iz grupe?","Bi li radije imati savršenu karijeru i nula slobodnog vremena, ili puno slobodnog vremena i karijeru koja zbunjuje rodbinu?","Bi li radije zauvijek živjeti u gradu koji voliš, ali u lošem stanu, ili u savršenom stanu u gradu koji te nervira?","Bi li radije da se sve tvoje želje ostvare doslovno, ili da se ne ostvari nijedna, ali dobiješ odlične priče?","Bi li radije biti najbolja verzija sebe samo noću, ili najgora verzija sebe svaki ponedjeljak ujutro?","Bi li radije imati prijatelje koji su brutalno iskreni, ili prijatelje koji su previše nježni i nikad ti ne kažu istinu?","Bi li radije dobiti nasljedstvo pod uvjetom da vodiš obiteljski posao, ili dobiti posao iz snova pod uvjetom da živiš s rođakom?","Bi li radije uvijek znati što treba napraviti, ali nemati energije, ili imati energije, ali nikad ne znati što radiš?","Bi li radije da svi tvoji bivši/bivše postanu susjedi, ili da svi tvoji profesori/šefovi postanu obiteljski prijatelji?","Bi li radije imati savršenu intuiciju, ali je nitko ne sluša, ili lošu intuiciju, ali svi ti vjeruju?","Bi li radije zauvijek ostati u trenutnoj životnoj fazi, ili svake godine dobiti novu osobnost bez upozorenja?","Bi li radije imati kuću iz snova, ali stalno punu gostiju, ili imati mir, ali živjeti u garsonijeri s tankim zidovima?","Bi li radije da ti svaki dan počne jednom malom pobjedom, ili da ti svaki dan završi jednom dobrom isprikom?","Bi li radije biti osoba koju svi zovu za pomoć, ili osoba koju nitko ne zove jer misle da imaš svoj kaos?","Bi li radije da ti se svaka dobra odluka isplati kasno, ili svaka loša odluka odmah izgleda zabavno?","Bi li radije živjeti bez glazbe, ili živjeti bez mogućnosti slanja poruka?","Bi li radije uvijek raditi ono što voliš za malo novca, ili ono što ne voliš za puno novca?","Bi li radije imati savršen plan za život i nikad spontanost, ili imati spontanost i nikad plan?","Bi li radije dobiti istinu o svom životu u jednoj rečenici, ili dobiti laž koja te motivira godinama?"]}},"Tko bi najprije...?":{"icon":"target","description":"Glasanje za najvjerojatnijeg krivca. Obrane, optužbe i žalbe su službeni dio igre.","categories":{"Preživljavanje u divljini":["Tko bi najprije preživio/la tri dana u šumi samo zbog tvrdoglavosti?","Tko bi najprije pokušao/la sprijateljiti se s divljom životinjom?","Tko bi najprije tvrdio/la da zna jesti bobice jer je gledao/la dokumentarac?","Tko bi najprije napravio/la sklonište koje izgleda dobro, ali se odmah raspadne?","Tko bi najprije postao/la vođa grupe iako ga/je nitko nije izabrao?","Tko bi najprije potrošio/la svu vodu jer je 'bio/la nervozan/nervozna'?","Tko bi najprije zapalio/la vatru na najopasniji mogući način?","Tko bi najprije našao/la signal samo da objavi story 'survival mode'?","Tko bi najprije paničario/la, ali nekako donio/la najbolju odluku?","Tko bi najprije odustao/la od civilizacije i rekao/la da mu/joj se ovo sviđa?","Tko bi najprije spakirao/la najbeskorisniju, ali najestetskiju opremu?","Tko bi najprije izgubio/la kartu i tvrdio/la da se orijentira po osjećaju?","Tko bi najprije prvi/prva predložio/la da se podijele, što je objektivno najgora ideja?","Tko bi najprije složio/la vatru savršeno, ali zaboravio/la kako se pali?","Tko bi najprije glasno pričao/la da se ne boji i probudio/la sve što se moglo probuditi?","Tko bi najprije napravio/la plan prehrane od tri krekera i optimizma?","Tko bi najprije uvjeravao/la sve da je mahovina navigacija, pa završio/la u krugu?","Tko bi najprije preuzeo/la ulogu liječnika jer ima flaster u novčaniku?","Tko bi najprije pokušao/la napraviti alat i stvorio/la novi problem?","Tko bi najprije pronašao/la vodu, ali na način koji nitko ne želi čuti?","Tko bi najprije prvi/prva predložio/la povratak kući i nazvao/la to strategijom?","Tko bi najprije organizirano vodio/la paniku kao projekt?","Tko bi najprije uspio/la ostati čist/a u blatu i svima ići na živce?","Tko bi najprije zaboravio/la najvažniji predmet, ali ponio/la tri punjača?","Tko bi najprije noću čuo/la svaki zvuk i dao/la mu ime?","Tko bi najprije od grana napravio/la nešto što izgleda kao umjetnička instalacija?","Tko bi najprije pregovarao/la s komarcima kao da imaju razum?","Tko bi najprije prvi/prva izmislio/la plemenska pravila za grupu?","Tko bi najprije pronašao/la jestivu biljku slučajno, ali to prodao/la kao znanje?","Tko bi najprije imao/la najgoru krizu, a onda postao/la heroj zadnjih pet minuta?"],"Financijski haos":["Tko bi najprije potrošio/la cijelu plaću u prvom vikendu?","Tko bi najprije kupio/la skupu stvar i nazvao/la je investicijom?","Tko bi najprije imao/la pet pretplata koje ne koristi?","Tko bi najprije posudio/la novac i vratio/la ga kroz kave i emotivnu podršku?","Tko bi najprije otišao/la po kruh i vratio/la se s računom od 80 eura?","Tko bi najprije napravio/la Excel budžet i ignorirao/la ga isti dan?","Tko bi najprije kupio/la nešto samo zato što je bilo sniženo s nerealne cijene?","Tko bi najprije zaboravio/la otkazati besplatni probni period?","Tko bi najprije uvjerio/la ekipu da je spontani vikend put 'financijski izvediv'?","Tko bi najprije bio/la bogat/a jedan dan i siromašan/siromašna ostatak mjeseca?","Tko bi najprije kupio/la premium verziju aplikacije koju otvori jednom?","Tko bi najprije rekao/la 'ne trošim ovaj mjesec' i naručio/la dostavu isti dan?","Tko bi najprije podigao/la gotovinu da manje troši i izgubio/la trag svemu?","Tko bi najprije imao/la mentalni budžet koji se raspadne kod prve kave?","Tko bi najprije kupio/la poklon toliko dobar da financijski ugrozi sebe?","Tko bi najprije zaboravio/la da se male kupnje zbrajaju u veliku sramotu?","Tko bi najprije uvjerio/la sebe da je skuplje zapravo jeftinije jer traje duže?","Tko bi najprije imao/la račun koji izgleda kao dnevnik impulsa?","Tko bi najprije uložio/la u nešto jer je netko rekao da je 'sigurno'?","Tko bi najprije kupio/la organizator novca umjesto da organizira novac?","Tko bi najprije prvi/prva predložio/la restoran koji nitko ne može platiti?","Tko bi najprije napravio/la financijski plan baziran na budućoj verziji sebe?","Tko bi najprije kupio/la nešto za hobi koji još ne postoji?","Tko bi najprije rekao/la 'samo gledam' i izašao/la s vrećicom?","Tko bi najprije zaboravio/la platiti nešto bitno, ali kupio/la dekoraciju?","Tko bi najprije ušao/la u dućan po jednu stvar i izašao/la s novim identitetom?","Tko bi najprije platio/la dostavu jer mu/joj se nije hodalo sedam minuta?","Tko bi najprije napravio/la grupni trošak i onda nestao/la iz matematike?","Tko bi najprije kupio/la avionsku kartu prije nego što je provjerio/la smještaj?","Tko bi najprije imao/la filozofiju 'novac se vraća', ali račun se ne slaže?"],"Ljubavne drame":["Tko bi najprije napravio/la ljubavnu dramu iz odgovora 'ok'?","Tko bi najprije napisao/la poruku od 40 redaka i poslao/la samo 'ma nema veze'?","Tko bi najprije završio/la u ljubavnom trokutu jer je svima bio/la predobar prijatelj?","Tko bi najprije oprostio/la nekome nakon jedne dobre pjesme?","Tko bi najprije imao/la tajnu vezu koju svi znaju osim njih dvoje?","Tko bi najprije analizirao/la nečiji story kao dokaz emocija?","Tko bi najprije rekao/la da je završio/la s nekim pa se javio/la istu večer?","Tko bi najprije pao/la na osobu koja je očiti problem?","Tko bi najprije tvrdio/la da nije ljubomoran/ljubomorna dok prati sve tragove?","Tko bi najprije imao/la 'situationship' koji traje duže od ozbiljne veze?","Tko bi najprije poslao/la poruku 'slučajno' baš kad je osoba online?","Tko bi najprije napravio/la plan prekida i odgodio/la ga zbog dobrog outfita?","Tko bi najprije branio/la osobu koju cijela grupa vidi kao alarm?","Tko bi najprije zaljubio/la se u nekoga zbog jedne rečenice i lošeg tajminga?","Tko bi najprije prepoznao/la red flag i nazvao/la ga izazovom?","Tko bi najprije držao/la emocionalnu prezentaciju u grupnom chatu?","Tko bi najprije govorio/la 'nije ništa' dok je sve bilo nešto?","Tko bi najprije vratio/la bivšem/bivšoj jer je retrogradni Merkur dobio previše moći?","Tko bi najprije uvjeravao/la sve da je dejt bio loš, a onda čekao/la poruku?","Tko bi najprije napravio/la playlistu prije prvog ozbiljnog razgovora?","Tko bi najprije mislio/la da može biti casual i onda otvorio/la dušu?","Tko bi najprije dao/la savjet drugima koji sam/a nikad ne bi poslušao/la?","Tko bi najprije posvađao/la se s osobom u glavi prije stvarnog razgovora?","Tko bi najprije oprostio/la jer je isprika imala dobar timing?","Tko bi najprije provjeravao/la tko je kome lajkao što kao profesionalni analitičar?","Tko bi najprije prekinuo/la i odmah pitao/la ekipu je li pogriješio/la?","Tko bi najprije započeo/la odnos s 'nemam očekivanja' i razvio/la pet očekivanja?","Tko bi najprije nestao/la da vidi hoće li ga/je netko tražiti?","Tko bi najprije napravio/la dramu zbog tona poruke, ne sadržaja?","Tko bi najprije zaljubio/la se u osobu koju je ekipa jednoglasno odbila?"],"Neočekivane karijere":["Tko bi najprije postao/la špijun jer već prirodno zna previše?","Tko bi najprije otvorio/la mali restoran i odbio/la raditi vikendom?","Tko bi najprije postao/la motivacijski govornik nakon jedne produktivne nedjelje?","Tko bi najprije završio/la kao vlasnik/ca čudnog hostela na otoku?","Tko bi najprije promijenio/la karijeru u nešto potpuno nasumično i rekao/la da je to oduvijek htio/la?","Tko bi najprije postao/la voditelj/ica reality showa?","Tko bi najprije pokrenuo/la podcast s tri epizode i velikim ambicijama?","Tko bi najprije postao/la influencer za nišu koju nitko ne razumije?","Tko bi najprije otvorio/la dućan s predmetima koji postoje samo zbog estetike?","Tko bi najprije završio/la kao politički savjetnik jer dobro glumi ozbiljnost?","Tko bi najprije postao/la privatni detektiv za društvene mreže?","Tko bi najprije otvorio/la školu života nakon dvije pročitane knjige?","Tko bi najprije postao/la stručnjak za krizni PR jer stalno spašava svoje poruke?","Tko bi najprije pokrenuo/la brend svijeća s imenima bivših?","Tko bi najprije završio/la kao turistički vodič koji izmišlja pola priča?","Tko bi najprije postao/la organizator vjenčanja i svađao/la se s dekoracijom?","Tko bi najprije vodio/la radionice o disciplini dok kasni na vlastitu radionicu?","Tko bi najprije postao/la food kritičar jer ima jako osobno mišljenje o krumpiru?","Tko bi najprije otvorio/la kafić u kojem se ne smije raditi na laptopu?","Tko bi najprije postao/la life coach za ljude koji imaju manje kaosa od njega/nje?","Tko bi najprije radio/la kao pregovarač jer zna smiriti grupni chat?","Tko bi najprije postao/la astrolog iz šale i onda imao/la klijente?","Tko bi najprije otvorio/la agenciju za spojeve i spario/la sve pogrešno?","Tko bi najprije postao/la profesionalni organizator, ali samo tuđih života?","Tko bi najprije završio/la kao glas navigacije s pasivno-agresivnim tonom?","Tko bi najprije postao/la stručnjak za parfeme jer svi znaju da pretjeruje?","Tko bi najprije pokrenuo/la muzej svojih loših odluka?","Tko bi najprije postao/la voditelj/ica kviza jer ima energiju pitanja bez odgovora?","Tko bi najprije otvorio/la retreat za digitalni detox i promovirao/la ga na sedam mreža?","Tko bi najprije postao/la šef/ica nečega potpuno izmišljenog, ali zvuči važno?"],"Grupni kaos":["Tko bi najprije organizirao/la grupni plan i zakasnio/la na vlastiti dogovor?","Tko bi najprije nestao/la iz chata na tjedan dana i vratio/la se s 'šta ima'?","Tko bi najprije u ozbiljnoj situaciji rekao/la najgoru moguću šalu?","Tko bi najprije slučajno pokrenuo/la trač koji preraste sve uključene?","Tko bi najprije došao/la s idejom koju svi mrze, ali na kraju ispadne odlična?","Tko bi najprije promijenio/la plan pet minuta prije polaska?","Tko bi najprije držao/la moralni govor i onda napravio/la isto što kritizira?","Tko bi najprije preuzeo/la kontrolu nad glazbom i uništio/la atmosferu?","Tko bi najprije rekao/la 'ja sam lagan/a za dogovor' i onda imao/la 14 uvjeta?","Tko bi najprije zaboravio/la da je nešto obećao/la cijeloj ekipi?","Tko bi najprije poslao/la lokaciju bez konteksta i očekivao/la da svi razumiju?","Tko bi najprije napravio/la anketu u chatu i ignorirao/la rezultate?","Tko bi najprije prvi/prva rekao/la da ide doma i zadnji/zadnja ostao/la?","Tko bi najprije došao/la nespreman/nespremna, ali s najviše komentara?","Tko bi najprije izgubio/la nešto zajedničko i ponašao/la se kao da je misterij?","Tko bi najprije preuzeo/la naručivanje hrane i izazvao/la diplomatsku krizu?","Tko bi najprije pokrenuo/la igru, objasnio/la pravila krivo i tvrdio/la da je tako bolje?","Tko bi najprije napravio/la grupnu fotografiju na kojoj samo on/ona izgleda dobro?","Tko bi najprije bio/la zadužen/a za jednu stvar i donio/la sve osim toga?","Tko bi najprije rekao/la 'neću dugo' i otvorio/la najdužu temu večeri?","Tko bi najprije pretvorio/la sitnu odluku u referendum?","Tko bi najprije posvađao/la se s aplikacijom za dijeljenje računa?","Tko bi najprije uvjerio/la grupu da možemo pješice i izgubio/la povjerenje?","Tko bi najprije zaspao/la na kauču dok se još odlučuje gdje idemo?","Tko bi najprije došao/la s vrećicom nepoznatih grickalica i promijenio/la tok večeri?","Tko bi najprije prvi/prva stvorio/la nadimak koji se više nikad ne može izbrisati?","Tko bi najprije imao/la najjače mišljenje o planu u kojem neće sudjelovati?","Tko bi najprije slučajno pozvao/la osobu koju nitko nije planirao?","Tko bi najprije najviše se žalio/la i onda najviše uživao/la?","Tko bi najprije pretvorio/la običnu večer u priču koju se priča godinama?"],"Tajne i tračevi":["Tko bi najprije slučajno otkrio/la tajnu jer je mislio/la da svi već znaju?","Tko bi najprije znao/la detalje prekida prije osoba koje su prekinule?","Tko bi najprije imao/la screenshot koji rješava cijelu raspravu?","Tko bi najprije rekao/la 'neću nikome' i onda rekao/la samo jednoj osobi?","Tko bi najprije prepoznao/la par prije nego oni priznaju da su par?","Tko bi najprije složio/la teoriju zavjere iz tri lajka i jednog pogleda?","Tko bi najprije otkrio/la nečiji crush bez da ga/je itko pita?","Tko bi najprije znao/la sve, ali se pravio/la da ne zna ništa?","Tko bi najprije bio/la opasan/opasna u kvizu o tuđim životima?","Tko bi najprije čuo/la trač, provjerio/la ga i vratio/la se s izvorima?","Tko bi najprije spojio/la dvije nepovezane informacije u zabrinjavajuće točnu priču?","Tko bi najprije znao/la tko se posvađao samo po tišini u grupnom chatu?","Tko bi najprije imao/la arhivu screenshotova uredniju od vlastitog ormara?","Tko bi najprije počeo/la rečenicu s 'ne smijem reći' i svejedno rekao/la?","Tko bi najprije prepoznao/la laž po jednoj previše detaljnoj rečenici?","Tko bi najprije od šutnje napravio/la dokaz?","Tko bi najprije prvi/prva skužio/la da se nešto događa jer je netko promijenio emoji?","Tko bi najprije znao/la tko je kome bivši/bivša bez da je upoznao/la pola ljudi?","Tko bi najprije postavio/la 'nevino pitanje' koje zapravo otvara istragu?","Tko bi najprije spasio/la grupu od krive informacije, ali iz sumnjivih izvora?","Tko bi najprije u dvije minute saznao/la ono što drugi ne saznaju mjesecima?","Tko bi najprije slučajno postao/la čuvar najgore moguće tajne?","Tko bi najprije imao/la intuiciju koja je prečesto točna da bude ugodna?","Tko bi najprije rekao/la 'nije trač, nego kontekst' i nastavio/la 20 minuta?","Tko bi najprije povezao/la novu osobu s nečijom starom pričom prije svih?","Tko bi najprije znao/la previše jer ljudi oko njega/nje sami priznaju?","Tko bi najprije otkrio/la tko je koga blokirao po nedostatku reakcija?","Tko bi najprije čitao/la grupnu dinamiku kao vremensku kartu?","Tko bi najprije znao/la pravu verziju priče i čekao/la dramatičan trenutak?","Tko bi najprije bio/la razlog zašto se u ekipi govori 'ovo ne ide dalje'?"]}}};
+
+    const svgIcons = {
+      spark: `<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="gSpark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#ef476f"/></linearGradient></defs><path d="M32 4 L38 24 L59 24 L42 37 L48 59 L32 46 L16 59 L22 37 L5 24 L26 24 Z" fill="url(#gSpark)"/><circle cx="32" cy="32" r="7" fill="#141421"/></svg>`,
+      mask: `<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="gMask" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#06d6a0"/><stop offset="1" stop-color="#77d6ff"/></linearGradient></defs><path d="M10 17 C18 10 46 10 54 17 L49 42 C46 53 36 58 32 58 C28 58 18 53 15 42 Z" fill="url(#gMask)"/><path d="M20 30 C25 26 30 27 33 32 C27 34 23 34 20 30Z" fill="#141421"/><path d="M44 30 C39 26 34 27 31 32 C37 34 41 34 44 30Z" fill="#141421"/><path d="M25 45 C29 48 35 48 39 45" stroke="#141421" stroke-width="4" stroke-linecap="round" fill="none"/></svg>`,
+      split: `<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="gSplit" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd166"/><stop offset=".5" stop-color="#ef476f"/><stop offset="1" stop-color="#b388ff"/></linearGradient></defs><path d="M15 8 H49 C53 8 56 11 56 15 V49 C56 53 53 56 49 56 H15 C11 56 8 53 8 49 V15 C8 11 11 8 15 8Z" fill="url(#gSplit)"/><path d="M32 12 V52" stroke="#141421" stroke-width="5" stroke-linecap="round"/><path d="M22 25 L16 32 L22 39" stroke="#141421" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M42 25 L48 32 L42 39" stroke="#141421" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`,
+      target: `<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="gTarget" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ef476f"/><stop offset="1" stop-color="#ffd166"/></linearGradient></defs><circle cx="32" cy="32" r="26" fill="url(#gTarget)"/><circle cx="32" cy="32" r="17" fill="#141421"/><circle cx="32" cy="32" r="9" fill="#f8f2e8"/><path d="M44 10 L54 10 L54 20 M54 10 L34 30" stroke="#f8f2e8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+    };
+
+    const palette = ["#ffd166", "#ef476f", "#06d6a0", "#77d6ff", "#b388ff", "#ff9f1c", "#f78fb3", "#7bed9f"];
+
+    let selectedGame = Object.keys(games)[0];
+    let selectedCategory = "Sve";
+    let deck = [];
+    let index = 0;
+
+    const gameGrid = document.getElementById("gameGrid");
+    const categoryGrid = document.getElementById("categoryGrid");
+    const setup = document.getElementById("setup");
+    const play = document.getElementById("play");
+    const modeLabel = document.getElementById("modeLabel");
+    const metaLabel = document.getElementById("metaLabel");
+    const miniCategoryBar = document.getElementById("miniCategoryBar");
+    const categoryLabel = document.getElementById("categoryLabel");
+    const questionText = document.getElementById("questionText");
+    const counter = document.getElementById("counter");
+    const deckLabel = document.getElementById("deckLabel");
+    const progressBar = document.getElementById("progressBar");
+    const deckNote = document.getElementById("deckNote");
+    const tableCard = document.getElementById("tableCard");
+
+    function getCategories(gameName) {
+      return Object.keys(games[gameName].categories);
+    }
+
+    function flattenGame(gameName, categoryName = "Sve") {
+      const cats = games[gameName].categories;
+      if (categoryName !== "Sve") {
+        return cats[categoryName].map(text => ({ text, category: categoryName }));
+      }
+      return Object.entries(cats).flatMap(([category, items]) => items.map(text => ({ text, category })));
+    }
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function categoryCount(gameName, categoryName) {
+      return flattenGame(gameName, categoryName).length;
+    }
+
+    function colorFor(text) {
+      let hash = 0;
+      for (let i = 0; i < text.length; i++) hash = ((hash << 5) - hash) + text.charCodeAt(i);
+      return palette[Math.abs(hash) % palette.length];
+    }
+
+    function applyAccent() {
+      const base = colorFor(selectedGame + selectedCategory);
+      const alt = colorFor(selectedCategory + selectedGame + "alt");
+      document.documentElement.style.setProperty("--active", base);
+      document.documentElement.style.setProperty("--active2", alt);
+    }
+
+    function renderGameButtons() {
+      gameGrid.innerHTML = "";
+      Object.entries(games).forEach(([name, game]) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "game-btn" + (name === selectedGame ? " active" : "");
+        const count = categoryCount(name, "Sve");
+        btn.innerHTML = `
+          <div class="game-graphic">${svgIcons[game.icon] || ""}</div>
+          <div class="game-title">${name}</div>
+          <p class="game-desc">${game.description}</p>
+          <div class="game-count">${count} kartica</div>
+        `;
+        btn.addEventListener("click", () => {
+          selectedGame = name;
+          selectedCategory = "Sve";
+          applyAccent();
+          renderGameButtons();
+          renderCategoryButtons();
+        });
+        gameGrid.appendChild(btn);
+      });
+    }
+
+    function renderCategoryButtons() {
+      categoryGrid.innerHTML = "";
+      ["Sve", ...getCategories(selectedGame)].forEach(category => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "category-btn" + (category === selectedCategory ? " active" : "");
+        btn.innerHTML = `
+          <span class="category-name"><span class="category-dot"></span>${category}</span>
+          <span class="category-count">${categoryCount(selectedGame, category)} kartica</span>
+        `;
+        btn.addEventListener("click", () => {
+          selectedCategory = category;
+          applyAccent();
+          renderCategoryButtons();
+        });
+        categoryGrid.appendChild(btn);
+      });
+    }
+
+    function renderMiniCategoryBar() {
+      miniCategoryBar.innerHTML = "";
+      ["Sve", ...getCategories(selectedGame)].forEach(category => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "mini-chip" + (category === selectedCategory ? " active" : "");
+        chip.textContent = category;
+        chip.addEventListener("click", () => {
+          selectedCategory = category;
+          applyAccent();
+          newDeck();
+        });
+        miniCategoryBar.appendChild(chip);
+      });
+    }
+
+    function newDeck() {
+      applyAccent();
+      deck = shuffle(flattenGame(selectedGame, selectedCategory));
+      index = 0;
+      modeLabel.textContent = selectedGame;
+      metaLabel.textContent = games[selectedGame].description;
+      deckLabel.textContent = `Špil: ${selectedCategory}`;
+      deckNote.textContent = selectedCategory === "Sve"
+        ? `Miješaš sve kategorije za “${selectedGame}”. Ukupno ${deck.length} kartica.`
+        : `Igraš kategoriju “${selectedCategory}”. Ukupno ${deck.length} kartica.`;
+      renderMiniCategoryBar();
+      renderCard();
+    }
+
+    function startGame() {
+      setup.style.display = "none";
+      play.classList.add("active");
+      newDeck();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderCard() {
+      if (!deck.length) return;
+      const current = deck[index];
+      categoryLabel.textContent = current.category;
+      questionText.textContent = current.text;
+      counter.textContent = `${index + 1} / ${deck.length}`;
+      const pct = ((index + 1) / deck.length) * 100;
+      progressBar.style.width = `${pct}%`;
+      tableCard.classList.remove("pop");
+      void tableCard.offsetWidth;
+      tableCard.classList.add("pop");
+    }
+
+    document.getElementById("startBtn").addEventListener("click", startGame);
+
+    document.getElementById("randomSetupBtn").addEventListener("click", () => {
+      const gameNames = Object.keys(games);
+      selectedGame = gameNames[Math.floor(Math.random() * gameNames.length)];
+      const cats = ["Sve", ...getCategories(selectedGame)];
+      selectedCategory = cats[Math.floor(Math.random() * cats.length)];
+      renderGameButtons();
+      renderCategoryButtons();
+      startGame();
+    });
+
+    document.getElementById("backBtn").addEventListener("click", () => {
+      play.classList.remove("active");
+      setup.style.display = "grid";
+      renderGameButtons();
+      renderCategoryButtons();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      index = (index + 1) % deck.length;
+      renderCard();
+    });
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      index = (index - 1 + deck.length) % deck.length;
+      renderCard();
+    });
+
+    document.getElementById("randomBtn").addEventListener("click", () => {
+      index = Math.floor(Math.random() * deck.length);
+      renderCard();
+    });
+
+    document.getElementById("reshuffleBtn").addEventListener("click", () => {
+      deck = shuffle(deck);
+      index = 0;
+      renderCard();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (!play.classList.contains("active")) return;
+      if (event.key === "ArrowRight" || event.key === " ") {
+        event.preventDefault();
+        index = (index + 1) % deck.length;
+        renderCard();
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        index = (index - 1 + deck.length) % deck.length;
+        renderCard();
+      }
+      if (event.key.toLowerCase() === "r") {
+        deck = shuffle(deck);
+        index = 0;
+        renderCard();
+      }
+    });
+
+    applyAccent();
+    renderGameButtons();
+    renderCategoryButtons();
+  </script>
+</body>
+</html>
