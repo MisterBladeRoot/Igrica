@@ -592,7 +592,7 @@
 
     .controls {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 10px;
     }
 
@@ -616,13 +616,13 @@
       .hero-art { min-height: 260px; }
       .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .controls { grid-template-columns: repeat(2, 1fr); }
+      .controls { grid-template-columns: repeat(2, 1fr); }  /* already 2col */
       .topbar { grid-template-columns: 1fr; }
       .table-card { min-height: 390px; padding: 30px; }
     }
 
     @media (max-width: 560px) {
-      .game-grid, .category-grid, .controls { grid-template-columns: 1fr; }
+      .game-grid, .category-grid { grid-template-columns: 1fr; }
       .hero-copy, .hero-art, .panel, .table-card { border-radius: 22px; }
       .stats { display: grid; grid-template-columns: repeat(2, 1fr); }
       .stat { min-width: 0; }
@@ -713,7 +713,6 @@
       <div>
         <div class="section-head">
           <p class="section-title">1. Odaberi igru</p>
-          <p class="section-note">Svaka igra ima vlastiti špil i ton.</p>
         </div>
         <div class="game-grid" id="gameGrid"></div>
       </div>
@@ -721,15 +720,12 @@
       <div>
         <div class="section-head">
           <p class="section-title">2. Odaberi kategoriju</p>
-          <p class="section-note">“Sve” miješa cijeli špil odabrane igre.</p>
         </div>
         <div class="category-grid" id="categoryGrid"></div>
       </div>
 
       <div class="actions">
-        <button class="primary" id="startBtn">Izvuci prvu karticu</button>
-        <button class="secondary" id="randomSetupBtn">Iznenadi me</button>
-        <p class="hint">Dizajn je složen kao špil kartica: odaberi mod, izvuci pitanje i natjeraj optužene da se brane. Nema kopiranja pitanja; igra je napravljena za igranje direktno s ekrana.</p>
+        <button class="primary" id="startBtn">Započni igru</button>
       </div>
     </section>
 
@@ -767,13 +763,10 @@
       <div class="controls">
         <button class="secondary" id="prevBtn">Prethodno</button>
         <button class="primary" id="nextBtn">Sljedeće</button>
-        <button class="secondary" id="randomBtn">Nasumično</button>
-        <button class="secondary" id="reshuffleBtn">Promiješaj</button>
       </div>
       <div class="deck-note" id="deckNote"></div>
     </section>
 
-    <footer>Kaos Kompas radi offline u pregledniku. Najbolje radi kad netko mora objasniti svoj izbor.</footer>
   </main>
 
   <script>
@@ -920,6 +913,8 @@
     }
 
     function startGame() {
+      const hero = document.querySelector(".hero");
+      if (hero) hero.style.display = "none";
       setup.style.display = "none";
       play.classList.add("active");
       newDeck();
@@ -940,18 +935,9 @@
     }
 
     document.getElementById("startBtn").addEventListener("click", startGame);
-
-    document.getElementById("randomSetupBtn").addEventListener("click", () => {
-      const gameNames = Object.keys(games);
-      selectedGame = gameNames[Math.floor(Math.random() * gameNames.length)];
-      const cats = ["Sve", ...getCategories(selectedGame)];
-      selectedCategory = cats[Math.floor(Math.random() * cats.length)];
-      renderGameButtons();
-      renderCategoryButtons();
-      startGame();
-    });
-
     document.getElementById("backBtn").addEventListener("click", () => {
+      const hero = document.querySelector(".hero");
+      if (hero) hero.style.display = "";
       play.classList.remove("active");
       setup.style.display = "grid";
       renderGameButtons();
@@ -968,18 +954,6 @@
       index = (index - 1 + deck.length) % deck.length;
       renderCard();
     });
-
-    document.getElementById("randomBtn").addEventListener("click", () => {
-      index = Math.floor(Math.random() * deck.length);
-      renderCard();
-    });
-
-    document.getElementById("reshuffleBtn").addEventListener("click", () => {
-      deck = shuffle(deck);
-      index = 0;
-      renderCard();
-    });
-
     document.addEventListener("keydown", (event) => {
       if (!play.classList.contains("active")) return;
       if (event.key === "ArrowRight" || event.key === " ") {
@@ -992,12 +966,7 @@
         index = (index - 1 + deck.length) % deck.length;
         renderCard();
       }
-      if (event.key.toLowerCase() === "r") {
-        deck = shuffle(deck);
-        index = 0;
-        renderCard();
-      }
-    });
+      });
 
     applyAccent();
     renderGameButtons();
